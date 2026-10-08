@@ -117,7 +117,7 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
     <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
     <div class="zoom"><input type="range" id="zoom" min="1" max="5" step="0.05" value="1" aria-label="Zoom"><span id="zval">1.0x</span></div>
     <div class="info"><span id="info"></span><span id="simLabel"></span></div>
-    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button><button class="chip" id="hdBtn">HD / GALERI</button></div>
+    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button></div>
     <div class="recind" id="recind"><i></i><span id="rect">00:00</span></div>
     <div class="count" id="count"></div>
     <div class="flash" id="flash"></div>
@@ -137,36 +137,43 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 </div>
 <input type="file" id="file" accept="image/*" hidden>
 <script>
-const mk=(n,d,o)=>({n,d,sat:1,con:1,bri:0,fade:0,sh:[0,0,0],hi:[0,0,0],gr:.03,vig:.15,mono:0,cv:.3,hs:[1,1,1],cc:.06,hal:.1,...o});
-const SIMS=[
- mk("Provia","Standar, natural",{sat:1.05,con:1.05,cv:.3}),
- mk("Velvia","Warna pekat, tajam",{sat:1.3,con:1.12,cv:.5,hs:[1.1,1.25,1.2],cc:.16,sh:[-.01,0,.05],hi:[.01,.005,-.02],vig:.18}),
- mk("Astia","Lembut, kulit halus",{con:.95,bri:.03,fade:.02,cv:.2,hs:[.92,1.05,1.1],cc:.03,sh:[0,.01,.015],hi:[.03,.01,0],hal:.12}),
- mk("Classic Chrome","Kalem, dokumenter",{sat:.9,con:1.08,bri:-.02,fade:.04,cv:.5,hs:[.9,.62,.72],cc:.1,sh:[-.02,.005,.05],hi:[.03,.02,-.015],gr:.05,vig:.25}),
- mk("Classic Neg.","Film negatif jadul",{con:1.1,bri:-.02,fade:.05,cv:.6,hs:[1.08,.8,.88],cc:.1,sh:[-.03,.05,.05],hi:[.07,.01,-.01],gr:.07,vig:.3,hal:.25}),
- mk("Eterna","Sinematik",{sat:.8,con:.95,fade:.06,cv:.25,hs:[.9,.85,.9],cc:.04,sh:[0,.025,.045],hi:[.025,.012,0],gr:.04,vig:.2}),
- mk("Acros","Hitam putih",{mono:1,con:1.15,cv:.55,fade:.02,gr:.1,vig:.25,hal:.08}),
- mk("Pro Neg. Hi","Kontras potret studio",{sat:.95,con:1.08,cv:.4,hs:[.98,.9,.95],fade:.02,hi:[.012,.01,0],vig:.12}),
- mk("Pro Neg. Std","Lembut, natural",{sat:.85,con:.93,bri:.02,fade:.03,cv:.2,hs:[.95,.9,.95],cc:.03,sh:[0,.01,.01],hi:[.02,.01,0],vig:.1}),
- mk("Nostalgic Neg.","Hangat, ambar",{sat:1.05,con:1.08,bri:-.01,fade:.06,cv:.5,hs:[1.12,.85,.85],cc:.1,sh:[.05,.02,0],hi:[.07,.035,-.03],gr:.06,vig:.3,hal:.3}),
- mk("Reala Ace","Akurat, jernih",{sat:1.05,con:1.05,bri:.01,cv:.35,hs:[1.05,1,1.05],hi:[.01,0,0],vig:.1}),
- mk("Eterna Bleach Bypass","Pudar, kontras keras",{sat:.5,con:1.2,bri:-.03,fade:.02,cv:.75,hs:[.9,.8,.85],cc:.08,sh:[0,.01,.02],gr:.07,vig:.3}),
- mk("Monochrome","Hitam putih biasa",{mono:1,con:1.05,cv:.35,fade:.02,gr:.05}),
- mk("Sepia","Cokelat jadul",{mono:1,con:1.08,cv:.4,fade:.05,gr:.06,vig:.3,tone:[1.1,.92,.7]}),
- mk("Acros + Kuning","Langit lebih gelap",{mono:1,con:1.15,cv:.55,fade:.02,gr:.1,vig:.25,hal:.08,mw:[.5,.45,.05]}),
- mk("Acros + Merah","Langit sangat gelap",{mono:1,con:1.2,cv:.55,fade:.02,gr:.1,vig:.25,hal:.08,mw:[.8,.2,0]}),
- mk("Acros + Hijau","Kulit halus, daun terang",{mono:1,con:1.1,cv:.5,fade:.02,gr:.1,vig:.25,hal:.08,mw:[.2,.7,.1]}),
- mk("Mono + Kuning","Hitam putih, langit lebih gelap",{mono:1,con:1.05,cv:.35,fade:.02,gr:.05,mw:[.5,.45,.05]}),
- mk("Mono + Merah","Hitam putih, langit sangat gelap",{mono:1,con:1.1,cv:.4,fade:.02,gr:.05,mw:[.8,.2,0]}),
- mk("Mono + Hijau","Hitam putih, daun lebih terang",{mono:1,con:1.05,cv:.35,fade:.02,gr:.05,mw:[.2,.7,.1]})
-];
+const SIMS=[{"n":"Provia","d":"Standar, natural","con":1.06,"crv":0.3,"bri":0.0,"lift":0.0,"roll":0.1,"sat":1.05,"bs":[1.05,1,1.05,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Velvia","d":"Warna pekat, tajam","con":1.2,"crv":0.55,"bri":0.0,"lift":-0.02,"roll":0.08,"sat":1.12,"bs":[1.25,1.2,1.35,1.2,1.35,1.15],"bh":[0,0,4,0,6,0],"bl":[0.97,1,0.92,0.96,0.85,0.97],"sh":[0,0,0],"hi":[0,0,0],"cc":0.16,"gr":0.03,"hal":0.1,"vig":0.18,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Astia","d":"Lembut, kulit halus","con":0.95,"crv":0.2,"bri":0.02,"lift":0.02,"roll":0.2,"sat":0.98,"bs":[0.95,0.95,0.9,0.9,0.85,0.9],"bh":[2,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.008,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.12,"vig":0.15,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Classic Chrome","d":"Kalem, dokumenter","con":1.14,"crv":0.5,"bri":0.0,"lift":0.03,"roll":0.15,"sat":0.8,"bs":[0.9,0.8,0.62,0.85,0.85,0.7],"bh":[3,-4,-14,-4,-10,0],"bl":[0.98,0.96,0.88,0.94,0.74,0.95],"sh":[-0.015,0.005,0.045],"hi":[0.02,0.015,-0.005],"cc":0.1,"gr":0.05,"hal":0.08,"vig":0.25,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Classic Neg.","d":"Film negatif jadul","con":1.12,"crv":0.6,"bri":0.0,"lift":0.04,"roll":0.1,"sat":0.95,"bs":[1.1,1,1.05,1,0.9,1.1],"bh":[4,3,16,6,-4,6],"bl":[0.98,1,0.9,0.95,0.85,1],"sh":[-0.02,0.045,0.05],"hi":[0.065,0.012,-0.025],"cc":0.1,"gr":0.07,"hal":0.25,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Eterna","d":"Sinematik","con":0.94,"crv":0.25,"bri":0.0,"lift":0.032,"roll":0.4,"sat":0.72,"bs":[0.9,0.85,0.7,0.8,0.75,0.8],"bh":[0,0,-8,-6,-8,0],"bl":[1,1,0.95,1,0.9,1],"sh":[0,0.025,0.04],"hi":[0.02,0.012,0],"cc":0.04,"gr":0.04,"hal":0.1,"vig":0.2,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Acros","d":"Hitam putih","con":1.18,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Pro Neg. Hi","d":"Kontras potret studio","con":1.08,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.2,"sat":0.95,"bs":[0.98,0.98,0.9,0.9,0.88,0.95],"bh":[1,0,-4,0,-4,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.012,0.01,0],"cc":0.04,"gr":0.03,"hal":0.1,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Pro Neg. Std","d":"Lembut, natural","con":0.94,"crv":0.2,"bri":0.02,"lift":0.03,"roll":0.3,"sat":0.85,"bs":[0.95,0.95,0.85,0.85,0.8,0.9],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Nostalgic Neg.","d":"Hangat, ambar","con":1.06,"crv":0.45,"bri":0.0,"lift":0.06,"roll":0.3,"sat":1.0,"bs":[1.15,1.12,0.78,0.78,0.82,1.0],"bh":[4,2,-12,-6,-8,2],"bl":[0.98,1,0.9,0.95,0.85,1],"sh":[0.05,0.025,0],"hi":[0.07,0.04,-0.03],"cc":0.1,"gr":0.06,"hal":0.3,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Reala Ace","d":"Akurat, jernih","con":1.08,"crv":0.4,"bri":0.0,"lift":0.005,"roll":0.12,"sat":1.05,"bs":[1.05,1,1,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.01,0.005,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Eterna Bleach Bypass","d":"Pudar, kontras keras","con":1.38,"crv":0.75,"bri":0.0,"lift":0.0,"roll":0.05,"sat":0.45,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.02],"hi":[0,0,0],"cc":0.08,"gr":0.07,"hal":0.1,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Monochrome","d":"Hitam putih biasa","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Sepia","d":"Cokelat jadul","con":1.08,"crv":0.4,"bri":0.0,"lift":0.05,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.06,"hal":0.1,"vig":0.3,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1.1,0.92,0.7]},
+{"n":"Acros + Kuning","d":"Langit lebih gelap","con":1.18,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
+{"n":"Acros + Merah","d":"Langit sangat gelap","con":1.22,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
+{"n":"Acros + Hijau","d":"Kulit halus, daun terang","con":1.12,"crv":0.5,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]},
+{"n":"Mono + Kuning","d":"Hitam putih, langit lebih gelap","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
+{"n":"Mono + Merah","d":"Hitam putih, langit sangat gelap","con":1.1,"crv":0.4,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
+{"n":"Mono + Hijau","d":"Hitam putih, daun lebih terang","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
 
 const $=id=>document.getElementById(id);
 const cv=$("cv"),gl=cv.getContext("webgl",{preserveDrawingBuffer:true});
 const VS="attribute vec2 p;varying vec2 uv;uniform float m;uniform vec2 crop;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);if(m>.5)uv.x=1.-uv.x;uv=(uv-.5)*crop+.5;gl_Position=vec4(p,0.,1.);}";
-const FS=`precision mediump float;varying vec2 uv;uniform sampler2D t;
-uniform float sat,con,bri,fade,gr,vig,mono,time,crv,cc,hal;uniform vec3 sh,hi,mw,tone,hs;uniform vec2 res;
+const FS=`
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 uv;uniform sampler2D t;
+uniform float con,bri,lift,roll,sat,crv,cc,gr,hal,vig,mono,time;
+uniform float bs[6],bh[6],bl[6];
+uniform vec3 sh,hi,mw,tone;uniform vec2 res;
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+vec3 rgb2hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);float e=1e-4;return vec3(abs(q.z+(q.w-q.y)/(6.*d+e)),d/(q.x+e),q.x);}
+vec3 hsv2rgb(vec3 c){vec4 K=vec4(1.,2./3.,1./3.,3.);vec3 p=abs(fract(c.xxx+K.xyz)*6.-K.www);return c.z*mix(K.xxx,clamp(p-K.xxx,0.,1.),c.y);}
 void main(){vec3 c=texture2D(t,uv).rgb;
 vec2 d1=1.1/res;
 vec3 nb=(texture2D(t,uv+vec2(d1.x,0.)).rgb+texture2D(t,uv-vec2(d1.x,0.)).rgb+texture2D(t,uv+vec2(0.,d1.y)).rgb+texture2D(t,uv-vec2(0.,d1.y)).rgb)*.25;
@@ -179,24 +186,32 @@ b+=max(texture2D(t,uv+vec2(px.x,-px.y)).rgb-.65,0.);b+=max(texture2D(t,uv+vec2(-
 c+=b*.125*hal*3.*vec3(1.,.5,.35);
 c=clamp(c,0.,1.);
 c=mix(c,c*c*(3.-2.*c),crv);
-c=(c-.5)*con+.5+bri;
-float l=lum(c);
-float mx=max(c.r,max(c.g,c.b)),ch=mx-min(c.r,min(c.g,c.b));
-vec3 w=vec3(max(c.r-max(c.g,c.b),0.),max(c.g-max(c.r,c.b),0.),max(c.b-max(c.r,c.g),0.));
-w/=(w.x+w.y+w.z+1e-4);
-float sm=mix(1.,dot(w,hs),smoothstep(0.,.12,ch));
-c=mix(vec3(l),c,sat*sm);
-c*=1.-cc*smoothstep(.12,.6,ch);
-l=clamp(lum(c),0.,1.);
+c=clamp((c-.5)*con+.5+bri,0.,1.);
+c=c*(1.+roll)/(1.+roll*c);
+if(mono>.5){c=vec3(dot(c,mw));}
+else{
+ vec3 hsv=rgb2hsv(c);
+ float sm=0.,hs=0.,lm=0.;
+ for(int i=0;i<6;i++){float dd=abs(hsv.x-float(i)/6.);dd=min(dd,1.-dd);float w=max(0.,1.-dd*6.);sm+=w*bs[i];hs+=w*bh[i];lm+=w*bl[i];}
+ hsv.x=fract(hsv.x+hs/360.);hsv.y=clamp(hsv.y*sm*sat,0.,1.);hsv.z=clamp(hsv.z*lm,0.,1.);
+ c=hsv2rgb(hsv);
+ float ch=max(c.r,max(c.g,c.b))-min(c.r,min(c.g,c.b));
+ c*=1.-cc*smoothstep(.12,.6,ch);
+}
+float l=clamp(lum(c),0.,1.);
 c+=sh*(1.-l)*(1.-l)*1.4+hi*l*l*1.4;
-c=fade+c*(1.-fade);
+c=lift+c*(1.-lift);
 float n=fract(sin(dot(floor(uv*vec2(1000.,1000.*res.y/res.x)),vec2(12.9898,78.233))+time)*43758.5453);
 c+=(n-.5)*gr*1.6*(1.-abs(l-.5)*1.3);
-if(mono>.5)c=vec3(dot(c,mw))*tone;
+if(mono>.5)c*=tone;
 float d=distance(uv,vec2(.5));c*=1.-vig*smoothstep(.3,.8,d);
 gl_FragColor=vec4(clamp(c,0.,1.),1.);}`;
+const FS_SAFE="precision mediump float;varying vec2 uv;uniform sampler2D t;void main(){gl_FragColor=vec4(texture2D(t,uv).rgb,1.);}";
 function sh_(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s}
-const pg=gl.createProgram();gl.attachShader(pg,sh_(gl.VERTEX_SHADER,VS));gl.attachShader(pg,sh_(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pg);gl.useProgram(pg);
+let SAFE=false;
+let pg=gl.createProgram();gl.attachShader(pg,sh_(gl.VERTEX_SHADER,VS));gl.attachShader(pg,sh_(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pg);
+if(!gl.getProgramParameter(pg,gl.LINK_STATUS)){SAFE=true;pg=gl.createProgram();gl.attachShader(pg,sh_(gl.VERTEX_SHADER,VS));gl.attachShader(pg,sh_(gl.FRAGMENT_SHADER,FS_SAFE));gl.linkProgram(pg)}
+gl.useProgram(pg);
 const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
 gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
 const loc=gl.getAttribLocation(pg,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
@@ -224,10 +239,14 @@ function frame(t){
    size(w,h);gl.bindTexture(gl.TEXTURE_2D,tex);
    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src);
    const dz=hw?1:zoom;gl.uniform2fv(U("crop"),[crop[0]/dz,crop[1]/dz]);gl.uniform1f(U("m"),(!still&&facing==="user")?1:0);
-   gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);
-   gl.uniform1f(U("fade"),s.fade);gl.uniform1f(U("gr"),s.gr);gl.uniform1f(U("vig"),s.vig);
-   gl.uniform1f(U("mono"),s.mono);gl.uniform1f(U("time"),still?1:(t%1000)/10);
-   gl.uniform1f(U("crv"),s.cv);gl.uniform3fv(U("hs"),s.hs);gl.uniform1f(U("cc"),s.cc);gl.uniform1f(U("hal"),s.hal);gl.uniform3fv(U("mw"),s.mw||[.299,.587,.114]);gl.uniform3fv(U("tone"),s.tone||[1,1,1]);gl.uniform3fv(U("sh"),s.sh);gl.uniform3fv(U("hi"),s.hi);gl.uniform2f(U("res"),cv.width,cv.height);
+   gl.uniform1f(U("time"),still?1:(t%1000)/10);gl.uniform2f(U("res"),cv.width,cv.height);
+   if(!SAFE){
+    gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);gl.uniform1f(U("lift"),s.lift);gl.uniform1f(U("roll"),s.roll);
+    gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("crv"),s.crv);gl.uniform1f(U("cc"),s.cc);gl.uniform1f(U("gr"),s.gr);
+    gl.uniform1f(U("hal"),s.hal);gl.uniform1f(U("vig"),s.vig);gl.uniform1f(U("mono"),s.mono);
+    gl.uniform1fv(U("bs"),s.bs);gl.uniform1fv(U("bh"),s.bh);gl.uniform1fv(U("bl"),s.bl);
+    gl.uniform3fv(U("sh"),s.sh);gl.uniform3fv(U("hi"),s.hi);gl.uniform3fv(U("mw"),s.mw);gl.uniform3fv(U("tone"),s.tone);
+   }
    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   }
  }
@@ -242,7 +261,7 @@ async function getStream(){
  return navigator.mediaDevices.getUserMedia({video:true,audio:false});
 }
 async function startCam(){
- $("msg").classList.remove("show");still=false;$("hdBtn").textContent="HD / GALERI";
+ $("msg").classList.remove("show");still=false;
  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;await new Promise(r=>setTimeout(r,250))}
  try{
   stream=await getStream();
@@ -378,20 +397,24 @@ $("close").onclick=()=>{strip.querySelectorAll("video").forEach(v=>v.pause());$(
 $("del").onclick=()=>{if(!photos.length)return;const i=cur_();const o=photos.splice(i,1)[0];if(o.type==="video")URL.revokeObjectURL(o.url);thumbUpd();
  if(!photos.length){$("ov").classList.remove("show");return}
  build();strip.scrollLeft=Math.min(i,photos.length-1)*strip.clientWidth;gcount()};
-$("save").onclick=()=>{const p=photos[cur_()];if(!p)return;const a=document.createElement("a");a.href=p.url;a.download=p.name;document.body.appendChild(a);a.click();a.remove()};
+function d2b(u){const i=u.indexOf(","),bin=atob(u.slice(i+1)),m=u.slice(5,u.indexOf(";")),arr=new Uint8Array(bin.length);
+ for(let k=0;k<bin.length;k++)arr[k]=bin.charCodeAt(k);return new Blob([arr],{type:m})}
+function blobOf(p){return p.type==="video"?p.blob:d2b(p.url)}
+$("save").onclick=()=>{const p=photos[cur_()];if(!p)return;
+ const u=URL.createObjectURL(blobOf(p));const a=document.createElement("a");a.href=u;a.download=p.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
 $("share").onclick=async()=>{
  const p=photos[cur_()];if(!p)return;
- try{const isV=p.type==="video";const b=isV?p.blob:await (await fetch(p.url)).blob();
-  const f=new File([b],p.name,{type:isV?p.mime:"image/jpeg"});
+ const isV=p.type==="video";
+ const f=new File([blobOf(p)],p.name,{type:isV?p.mime:"image/jpeg"});
+ try{
   if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
-  else alert(isV?"Pakai tombol Simpan untuk menyimpan video.":"Tekan lama foto lalu pilih Simpan.");
- }catch(e){}
+  else alert(isV?"Pakai tombol Simpan untuk menyimpan video.":"Tekan lama foto lalu pilih Simpan Gambar.");
+ }catch(e){if(e&&e.name!=="AbortError")alert("Menu bagikan tidak bisa dibuka. Tekan lama foto lalu pilih Simpan Gambar.")}
 };
 $("flip").onclick=async()=>{if(recorder)return;facing=facing==="user"?"environment":"user";await startCam()};
 $("pick").onclick=()=>$("file").click();
 $("file").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
- const im=new Image();im.onload=()=>{src=im;still=true;$("hdBtn").textContent="LIVE";hw=false;zmax=5;$("zoom").max=5;setZoom(1);$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
-$("hdBtn").onclick=()=>{if(recorder||counting)return;if(still)startCam();else $("file").click()};
+ const im=new Image();im.onload=()=>{src=im;still=true;hw=false;zmax=5;$("zoom").max=5;setZoom(1);$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
 startCam();
 </script>
 </body>
