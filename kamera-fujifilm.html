@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob:; connect-src data:">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kamera Film Simulasi</title>
+<style>
+:root{color-scheme:dark;--ink:#ecebe4;--dim:#9a9c92;--fuji:#2fb36b;--lcd:#9be5b0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;font-family:"Arial Narrow","Roboto Condensed",system-ui,sans-serif;color:var(--ink);
+background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 0 0/5px 5px}
+#app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;padding:10px 10px 0}
+/* top plate */
+.plate{position:relative;height:104px;border-radius:18px 18px 6px 6px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+background:linear-gradient(180deg,#e4e4df 0%,#b4b4ae 40%,#d3d3cd 52%,#8f8f8a 100%);box-shadow:0 2px 0 #fff6 inset,0 -3px 6px #0005 inset,0 6px 14px #000a}
+.plate::before{content:"";position:absolute;left:50%;top:-7px;width:92px;height:12px;transform:translateX(-50%);border-radius:5px 5px 0 0;background:linear-gradient(#cfcfc9,#7d7d78)}
+.badge{position:absolute;left:50%;top:16px;transform:translateX(-50%);text-align:center;color:#2a2a28;font-weight:700;font-size:17px;letter-spacing:.06em;font-style:italic;text-shadow:0 1px 0 #fff8}
+.badge small{display:block;font-size:10px;font-style:normal;font-weight:600;letter-spacing:.12em;color:#55554f}
+.dial{position:relative;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 8px #0008,0 0 0 2px #4446}
+.ring{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(#2e2e2c 0 4deg,#9a9a95 4deg 8deg);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+.ring::after{content:"";position:absolute;left:50%;top:1px;width:3px;height:9px;margin-left:-1.5px;border-radius:2px;background:#e8452c}
+.dial .face{position:absolute;z-index:1;inset:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a4a47,#161615);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4px;box-shadow:0 1px 0 #fff3 inset}
+.dial .cap{font-size:9px;letter-spacing:.14em;color:var(--dim)}
+.dial .val{font-size:12.5px;font-weight:700;line-height:1.05;color:var(--ink);max-width:56px}
+.dial select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border-radius:50%}
+/* screen */
+.bezel{position:relative;flex:1;min-height:0;margin:10px 4px;border-radius:14px;padding:9px;background:linear-gradient(145deg,#2a2a28,#0b0b0a);box-shadow:0 0 0 2px #555 inset,0 0 0 4px #111,0 10px 22px #000a}
+.vf{position:relative;width:100%;height:100%;border-radius:7px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #000,0 0 18px #000 inset}
+canvas{max-width:100%;max-height:100%;display:block}
+.corner{position:absolute;width:22px;height:22px;border:2px solid #fff9;pointer-events:none}
+.c1{left:12px;top:12px;border-right:0;border-bottom:0}.c2{right:12px;top:12px;border-left:0;border-bottom:0}
+.c3{left:12px;bottom:46px;border-right:0;border-top:0}.c4{right:12px;bottom:46px;border-left:0;border-top:0}
+.info{position:absolute;left:0;right:0;bottom:0;padding:7px 12px;background:linear-gradient(transparent,#000b);color:var(--lcd);font:700 13px ui-monospace,Menlo,Consolas,monospace;display:flex;justify-content:space-between;gap:8px;pointer-events:none;text-shadow:0 0 6px #2fb36b99}
+.info span:last-child{color:#9bd6b0aa;font-weight:500;text-align:right}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+.flash.on{opacity:.85;transition:none}
+.msg{position:absolute;inset:0;display:none;flex-direction:column;gap:14px;align-items:center;justify-content:center;text-align:center;padding:24px;background:#0d0e0c}
+.msg.show{display:flex}
+.msg p{margin:0;color:var(--dim);font-size:16px;max-width:290px;line-height:1.4}
+.btn{background:var(--fuji);color:#06130b;border:0;border-radius:8px;padding:12px 20px;font:700 16px inherit;font-family:inherit}
+.ghost{background:transparent;color:var(--ink);border:1px solid #444}
+/* grip */
+.grip{height:132px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 22px;margin:0 -10px;
+background:#151514 radial-gradient(rgba(255,255,255,.07) 1px,transparent 1.2px) 0 0/4px 4px;border-top:2px solid #2a2a28}
+.knob{width:54px;height:54px;border-radius:50%;border:0;color:#222;display:flex;align-items:center;justify-content:center;
+background:linear-gradient(180deg,#e0e0db,#8d8d88);box-shadow:0 3px 6px #000a,0 1px 0 #fff8 inset}
+.knob:active{transform:translateY(1px);filter:brightness(.9)}
+.shutter{position:relative;width:92px;height:92px;border-radius:50%;border:0;padding:0;
+background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);box-shadow:0 6px 12px #000c,0 0 0 3px #0008}
+.shutter::before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#555,#0d0d0c 70%);box-shadow:0 0 0 2px #0009}
+.shutter::after{content:"";position:absolute;inset:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7bd3ff55,#1a2a55 45%,#05060d);box-shadow:0 0 0 1px #fff3}
+.shutter:active{transform:scale(.96)}
+.thumb{width:54px;height:54px;border-radius:8px;border:2px solid #8d8d88;background:#0c0d0b center/cover;box-shadow:0 3px 6px #000a}
+.grip .l{justify-self:start}.grip .r{justify-self:end}
+.ov{position:fixed;inset:0;background:rgba(10,11,9,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:5;text-align:center}
+.ov.show{display:flex}
+.pola{background:#f2f1ea;padding:10px 10px 0;border-radius:2px;box-shadow:0 10px 30px #000;max-width:100%;display:flex;flex-direction:column;transform:rotate(-1.5deg)}
+.pola img{display:block;max-width:100%;max-height:calc(100vh - 300px)}
+#cap{padding:10px 4px 13px;color:#3a3a36;font:italic 18px "Bradley Hand","Segoe Script","Comic Sans MS",cursive;text-align:center}
+.ov p{margin:0;color:var(--dim);font-size:14px}
+.row{display:flex;gap:10px}
+.lcd{position:absolute;left:50%;top:58px;transform:translateX(-50%);display:flex;align-items:baseline;gap:5px;padding:3px 10px;border-radius:5px;background:#0b110d;box-shadow:0 0 0 2px #6a6a65,0 1px 0 2px #fff7;color:var(--lcd);font:700 11px ui-monospace,Menlo,Consolas,monospace;text-shadow:0 0 5px #2fb36b}
+.lcd b{font-size:17px}.lcd span{opacity:.7}
+.glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 30%)}
+.grip{position:relative}
+.grip::before{content:"";position:absolute;inset:8px 12px;border:1.5px dashed #ffffff26;border-radius:16px;pointer-events:none}
+.barrel{width:114px;height:114px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:repeating-conic-gradient(#232321 0 3deg,#74746f 3deg 6deg);box-shadow:0 8px 16px #000c,0 0 0 3px #0009}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="plate">
+    <div class="dial"><i class="ring" id="ring1"></i><div class="face"><span class="cap">FILM</span><span class="val" id="simName"></span></div><select id="simSel" aria-label="Filter film"></select></div>
+    <div class="badge">FILM CAM<small>FILM SIMULATION</small></div>
+    <div class="lcd"><span>EXP</span><b id="cnt">00</b><span>/36</span></div>
+    <div class="dial"><i class="ring" id="ring2"></i><div class="face"><span class="cap">UKURAN</span><span class="val" id="ratName" style="font-size:17px"></span></div><select id="ratSel" aria-label="Ukuran foto"></select></div>
+  </div>
+  <div class="bezel"><div class="vf">
+    <canvas id="cv"></canvas><i class="glass"></i>
+    <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+    <div class="info"><span id="info"></span><span id="simLabel"></span></div>
+    <div class="flash" id="flash"></div>
+    <div class="msg" id="msg"><p id="msgText"></p><button class="btn" id="pick">Pilih foto dari galeri</button></div>
+  </div></div>
+  <div class="grip">
+    <button class="knob l" id="flip" aria-label="Balik kamera"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-3l-1.5-2h-7L7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><path d="M9 13a3.2 3.2 0 0 1 5.6-2M15 13a3.2 3.2 0 0 1-5.6 2"/><path d="M14.6 9v2h-2M9.4 17v-2h2"/></svg></button>
+    <div class="barrel"><button class="shutter" id="snap" aria-label="Ambil foto"></button></div>
+    <button class="thumb r" id="thumb" aria-label="Foto terakhir"></button>
+  </div>
+</div>
+<div class="ov" id="ov">
+  <div class="pola"><img id="shot" alt="Hasil foto"><div id="cap"></div></div>
+  <p>Tekan lama foto untuk simpan ke galeri. Foto tidak dikirim ke mana pun.</p>
+  <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="close">Tutup</button></div>
+</div>
+<input type="file" id="file" accept="image/*" hidden>
+<script>
+const SIMS=[
+ {n:"Provia",d:"Standar, natural",sat:1.05,con:1.08,bri:0,fade:0,sh:[0,0,0],hi:[0,0,0],gr:.03,vig:.15,mono:0},
+ {n:"Velvia",d:"Warna pekat, tajam",sat:1.55,con:1.22,bri:-.02,fade:0,sh:[-.02,0,.04],hi:[.02,.01,-.02],gr:.03,vig:.18,mono:0},
+ {n:"Astia",d:"Lembut, kulit halus",sat:.95,con:.92,bri:.03,fade:.02,sh:[0,.01,.01],hi:[.03,.01,0],gr:.03,vig:.1,mono:0},
+ {n:"Classic Chrome",d:"Kalem, dokumenter",sat:.72,con:1.15,bri:-.02,fade:.04,sh:[-.03,0,.05],hi:[.02,.015,-.01],gr:.05,vig:.25,mono:0},
+ {n:"Classic Neg.",d:"Film negatif jadul",sat:1.0,con:1.25,bri:-.03,fade:.05,sh:[-.02,.05,.04],hi:[.07,.02,-.04],gr:.07,vig:.3,mono:0},
+ {n:"Eterna",d:"Sinematik",sat:.75,con:.88,bri:0,fade:.06,sh:[0,.02,.04],hi:[.02,.01,0],gr:.04,vig:.2,mono:0},
+ {n:"Acros",d:"Hitam putih",sat:0,con:1.3,bri:-.01,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.09,vig:.25,mono:1},
+ {n:"Pro Neg. Hi",d:"Kontras potret studio",sat:.95,con:1.12,bri:0,fade:.02,sh:[0,0,0],hi:[.01,.01,0],gr:.03,vig:.12,mono:0},
+ {n:"Pro Neg. Std",d:"Lembut, natural",sat:.85,con:.9,bri:.02,fade:.03,sh:[0,.01,.01],hi:[.02,.01,0],gr:.03,vig:.1,mono:0},
+ {n:"Nostalgic Neg.",d:"Hangat, ambar",sat:1.1,con:1.1,bri:-.01,fade:.06,sh:[.05,.02,0],hi:[.06,.03,-.03],gr:.06,vig:.3,mono:0},
+ {n:"Reala Ace",d:"Akurat, jernih",sat:1.0,con:1.05,bri:.01,fade:0,sh:[0,0,0],hi:[.01,0,0],gr:.03,vig:.1,mono:0},
+ {n:"Eterna Bleach Bypass",d:"Pudar, kontras keras",sat:.45,con:1.35,bri:-.03,fade:.02,sh:[0,.01,.02],hi:[0,0,0],gr:.06,vig:.3,mono:0},
+ {n:"Monochrome",d:"Hitam putih biasa",sat:1,con:1.05,bri:0,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.05,vig:.15,mono:1},
+ {n:"Sepia",d:"Cokelat jadul",sat:1,con:1.08,bri:0,fade:.05,sh:[0,0,0],hi:[0,0,0],gr:.06,vig:.3,mono:1,tone:[1.1,.92,.7]},
+ {n:"Acros + Kuning",d:"Langit lebih gelap",sat:0,con:1.3,bri:-.01,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.09,vig:.25,mono:1,mw:[.5,.45,.05]},
+ {n:"Acros + Merah",d:"Langit sangat gelap",sat:0,con:1.35,bri:-.02,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.09,vig:.25,mono:1,mw:[.8,.2,0]},
+ {n:"Acros + Hijau",d:"Kulit halus, daun terang",sat:0,con:1.25,bri:-.01,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.09,vig:.25,mono:1,mw:[.2,.7,.1]},
+ {n:"Mono + Kuning",d:"Hitam putih, langit lebih gelap",sat:1,con:1.05,bri:0,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.05,vig:.15,mono:1,mw:[.5,.45,.05]},
+ {n:"Mono + Merah",d:"Hitam putih, langit sangat gelap",sat:1,con:1.1,bri:-.01,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.05,vig:.15,mono:1,mw:[.8,.2,0]},
+ {n:"Mono + Hijau",d:"Hitam putih, daun lebih terang",sat:1,con:1.05,bri:0,fade:.02,sh:[0,0,0],hi:[0,0,0],gr:.05,vig:.15,mono:1,mw:[.2,.7,.1]}
+];
+const $=id=>document.getElementById(id);
+const cv=$("cv"),gl=cv.getContext("webgl",{preserveDrawingBuffer:true});
+const VS="attribute vec2 p;varying vec2 uv;uniform float m;uniform vec2 crop;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);if(m>.5)uv.x=1.-uv.x;uv=(uv-.5)*crop+.5;gl_Position=vec4(p,0.,1.);}";
+const FS=`precision mediump float;varying vec2 uv;uniform sampler2D t;
+uniform float sat,con,bri,fade,gr,vig,mono,time;uniform vec3 sh,hi,mw,tone;uniform vec2 res;
+void main(){vec3 c=texture2D(t,uv).rgb;
+c=(c-.5)*con+.5+bri;
+float l=dot(c,vec3(.299,.587,.114));
+c=mix(vec3(l),c,sat);
+l=clamp(dot(c,vec3(.299,.587,.114)),0.,1.);
+c+=sh*(1.-l)+hi*l;
+c=fade+c*(1.-fade);
+float n=fract(sin(dot(uv*res+time,vec2(12.9898,78.233)))*43758.5453);
+c+=(n-.5)*gr;
+if(mono>.5)c=vec3(dot(c,mw))*tone;
+float d=distance(uv,vec2(.5));c*=1.-vig*smoothstep(.3,.8,d);
+gl_FragColor=vec4(clamp(c,0.,1.),1.);}`;
+function sh_(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s}
+const pg=gl.createProgram();gl.attachShader(pg,sh_(gl.VERTEX_SHADER,VS));gl.attachShader(pg,sh_(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pg);gl.useProgram(pg);
+const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const loc=gl.getAttribLocation(pg,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+[[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR]].forEach(a=>gl.texParameteri(gl.TEXTURE_2D,a[0],a[1]));
+const U=n=>gl.getUniformLocation(pg,n);
+
+let cur=0,facing="environment",stream=null,src=null,still=false;
+const video=document.createElement("video");video.playsInline=true;video.muted=true;
+
+let ratio=null,crop=[1,1];
+function size(w,h){
+ let W,H;
+ if(ratio){const a=ratio[0]/ratio[1],sa=w/h;crop=sa>a?[a/sa,1]:[1,sa/a];
+  if(a>=1){W=1440;H=Math.round(1440/a)}else{H=1440;W=Math.round(1440*a)}}
+ else{crop=[1,1];const k=Math.min(1,1440/Math.max(w,h));W=Math.round(w*k);H=Math.round(h*k)}
+ if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;gl.viewport(0,0,W,H)}}
+function draw(t){
+ const s=SIMS[cur];
+ if(src){
+  const w=src.videoWidth||src.naturalWidth,h=src.videoHeight||src.naturalHeight;
+  if(w&&(src!==video||video.readyState>=2)){
+   size(w,h);gl.bindTexture(gl.TEXTURE_2D,tex);
+   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src);
+   gl.uniform2fv(U("crop"),crop);gl.uniform1f(U("m"),(src===video&&facing==="user")?1:0);
+   gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);
+   gl.uniform1f(U("fade"),s.fade);gl.uniform1f(U("gr"),s.gr);gl.uniform1f(U("vig"),s.vig);
+   gl.uniform1f(U("mono"),s.mono);gl.uniform1f(U("time"),still?1:(t%1000)/10);
+   gl.uniform3fv(U("mw"),s.mw||[.299,.587,.114]);gl.uniform3fv(U("tone"),s.tone||[1,1,1]);gl.uniform3fv(U("sh"),s.sh);gl.uniform3fv(U("hi"),s.hi);gl.uniform2f(U("res"),cv.width,cv.height);
+   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  }
+ }
+ requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+async function getStream(){
+ const base={width:{ideal:1920},height:{ideal:1080}};
+ const tries=[{facingMode:{exact:facing}},{facingMode:{ideal:facing}}];
+ for(const t of tries){try{return await navigator.mediaDevices.getUserMedia({video:{...base,...t},audio:false})}catch(e){}}
+ return navigator.mediaDevices.getUserMedia({video:true,audio:false});
+}
+async function startCam(){
+ $("msg").classList.remove("show");still=false;
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;await new Promise(r=>setTimeout(r,250))}
+ try{
+  stream=await getStream();
+  video.srcObject=stream;await video.play();src=video;
+  const st=stream.getVideoTracks()[0].getSettings();
+  if(st.facingMode)facing=st.facingMode==="user"?"user":"environment";
+ }catch(e){
+  $("msgText").textContent="Kamera tidak bisa dibuka. Izinkan akses kamera di browser, atau pilih foto dari galeri.";
+  $("msg").classList.add("show");
+ }
+}
+
+SIMS.forEach((s,i)=>{const o=document.createElement("option");o.value=i;o.textContent=s.n;$("simSel").appendChild(o)});
+$("simSel").onchange=e=>pick(+e.target.value);
+let ri=0;function upd(){$("simName").textContent=SIMS[cur].n;$("ratName").textContent=RATS[ri][0];$("info").textContent=SIMS[cur].n.toUpperCase()+" \u00b7 "+RATS[ri][0];$("simLabel").textContent=SIMS[cur].d;$("ring1").style.transform="rotate("+cur*24+"deg)";$("ring2").style.transform="rotate("+ri*60+"deg)"}
+function pick(i){cur=i;upd()}
+const RATS=[["Asli",null],["1:1",[1,1]],["4:3",[4,3]],["3:4",[3,4]],["16:9",[16,9]],["9:16",[9,16]]];
+RATS.forEach((r,i)=>{const o=document.createElement("option");o.value=i;o.textContent=r[0];$("ratSel").appendChild(o)});
+$("ratSel").onchange=e=>{ri=+e.target.value;ratio=RATS[ri][1];upd()};
+pick(0);
+
+let last=null,lastCap="",n=0;
+function click(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain(),t=a.currentTime;
+ o.type="square";o.frequency.setValueAtTime(1800,t);o.frequency.exponentialRampToValueAtTime(300,t+.05);
+ g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(g);g.connect(a.destination);o.start();o.stop(t+.1);setTimeout(()=>a.close(),300)}catch(e){}
+ try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}}
+function show(){$("shot").src=last;$("cap").textContent=lastCap;$("ov").classList.add("show")}
+$("snap").onclick=()=>{
+ if(!src)return;
+ const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
+ last=cv.toDataURL("image/jpeg",.93);
+ lastCap=SIMS[cur].n+" \u00b7 "+new Date().toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+ n=n%36+1;$("cnt").textContent=String(n).padStart(2,"0");click();
+ $("thumb").style.backgroundImage="url("+last+")";$("thumb").textContent="";
+ setTimeout(show,180);
+};
+$("thumb").onclick=()=>{if(last)show()};
+$("close").onclick=()=>$("ov").classList.remove("show");
+$("share").onclick=async()=>{
+ try{const b=await (await fetch(last)).blob();
+  const f=new File([b],"film-"+SIMS[cur].n.replace(/\W+/g,"")+".jpg",{type:"image/jpeg"});
+  if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
+  else alert("Tekan lama foto lalu pilih Simpan.");
+ }catch(e){}
+};
+$("flip").onclick=async()=>{facing=facing==="user"?"environment":"user";await startCam()};
+$("pick").onclick=()=>$("file").click();
+$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;
+ const im=new Image();im.onload=()=>{src=im;still=true;$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
+startCam();
+</script>
+</body>
+</html>
