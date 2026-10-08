@@ -102,6 +102,7 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
 .thumb.vid::after{content:"\25B6";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-size:16px;text-shadow:0 1px 4px #000}
 html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 @supports(height:100dvh){html,body,#app{height:100dvh}}
+.strip img,.strip video{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -132,8 +133,8 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 <div class="ov" id="ov">
   <div class="gtop"><span id="gcount"></span><button class="btn ghost sm" id="close">Tutup</button></div>
   <div class="strip" id="strip"></div>
-  <p>Geser untuk melihat foto lain. Di iPhone: tekan Bagikan lalu pilih Simpan Gambar/Video. Foto tidak dikirim ke mana pun.</p>
-  <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="save">Simpan</button><button class="btn ghost" id="del">Hapus</button></div>
+  <p>Simpan ke Foto: tekan lama foto lalu pilih Tambah ke Foto, atau tekan Bagikan lalu gulir menu ke bawah dan pilih Simpan Gambar/Video. Tombol Unduh menyimpan ke aplikasi File.</p>
+  <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="save">Unduh</button><button class="btn ghost" id="del">Hapus</button></div>
 </div>
 <input type="file" id="file" accept="image/*" hidden>
 <script>
@@ -408,8 +409,8 @@ $("share").onclick=async()=>{
  const f=new File([blobOf(p)],p.name,{type:isV?p.mime:"image/jpeg"});
  try{
   if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
-  else alert(isV?"Pakai tombol Simpan untuk menyimpan video.":"Tekan lama foto lalu pilih Simpan Gambar.");
- }catch(e){if(e&&e.name!=="AbortError")alert("Menu bagikan tidak bisa dibuka. Tekan lama foto lalu pilih Simpan Gambar.")}
+  else alert(isV?"Pakai tombol Unduh untuk menyimpan video.":"Tekan lama foto lalu pilih Tambah ke Foto.");
+ }catch(e){if(e&&e.name!=="AbortError")alert("Menu bagikan tidak bisa dibuka. Tekan lama foto lalu pilih Tambah ke Foto.")}
 };
 $("flip").onclick=async()=>{if(recorder)return;facing=facing==="user"?"environment":"user";await startCam()};
 $("pick").onclick=()=>$("file").click();
