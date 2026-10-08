@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src blob:; connect-src data:">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Film Cam">
+<meta name="theme-color" content="#0e0e0d">
 <title>Kamera Film Simulasi</title>
 <style>
 :root{color-scheme:dark;--ink:#ecebe4;--dim:#9a9c92;--fuji:#2fb36b;--lcd:#9be5b0;
@@ -83,6 +88,20 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
 .strip::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:6px 4px}
 .slide .pola{transform:none}
+.tools{position:absolute;top:40px;left:0;right:0;display:flex;justify-content:center;gap:8px;pointer-events:none}
+.chip{pointer-events:auto;background:#000a;color:var(--lcd);border:1px solid #2fb36b66;border-radius:14px;padding:6px 12px;font:700 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.chip.on{background:var(--fuji);color:#06130b}
+.recind{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:7px;padding:4px 11px;border-radius:12px;background:#000b;color:#fff;font:700 14px ui-monospace,Menlo,Consolas,monospace}
+.recind.show{display:flex}
+.recind i{width:10px;height:10px;border-radius:50%;background:#ff3b2f;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font:700 130px/1 "Arial Narrow",system-ui,sans-serif;color:#fff;text-shadow:0 4px 28px #000;pointer-events:none;background:#0003}
+.count.show{display:flex}
+.shutter.vid::after{background:radial-gradient(circle at 35% 30%,#ffa59b,#d3281a 55%,#5a0d07)}
+.shutter.recording::after{inset:33px;border-radius:7px}
+.thumb.vid::after{content:"\25B6";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff;font-size:16px;text-shadow:0 1px 4px #000}
+html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+@supports(height:100dvh){html,body,#app{height:100dvh}}
 </style>
 </head>
 <body>
@@ -98,6 +117,9 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
     <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
     <div class="zoom"><input type="range" id="zoom" min="1" max="5" step="0.05" value="1" aria-label="Zoom"><span id="zval">1.0x</span></div>
     <div class="info"><span id="info"></span><span id="simLabel"></span></div>
+    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button><button class="chip" id="hdBtn">HD / GALERI</button></div>
+    <div class="recind" id="recind"><i></i><span id="rect">00:00</span></div>
+    <div class="count" id="count"></div>
     <div class="flash" id="flash"></div>
     <div class="msg" id="msg"><p id="msgText"></p><button class="btn" id="pick">Pilih foto dari galeri</button></div>
   </div></div>
@@ -110,7 +132,7 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
 <div class="ov" id="ov">
   <div class="gtop"><span id="gcount"></span><button class="btn ghost sm" id="close">Tutup</button></div>
   <div class="strip" id="strip"></div>
-  <p>Geser kiri/kanan untuk melihat foto lain. Foto tidak dikirim ke mana pun.</p>
+  <p>Geser untuk melihat foto lain. Di iPhone: tekan Bagikan lalu pilih Simpan Gambar/Video. Foto tidak dikirim ke mana pun.</p>
   <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="save">Simpan</button><button class="btn ghost" id="del">Hapus</button></div>
 </div>
 <input type="file" id="file" accept="image/*" hidden>
@@ -146,6 +168,9 @@ const FS=`precision mediump float;varying vec2 uv;uniform sampler2D t;
 uniform float sat,con,bri,fade,gr,vig,mono,time,crv,cc,hal;uniform vec3 sh,hi,mw,tone,hs;uniform vec2 res;
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
 void main(){vec3 c=texture2D(t,uv).rgb;
+vec2 d1=1.1/res;
+vec3 nb=(texture2D(t,uv+vec2(d1.x,0.)).rgb+texture2D(t,uv-vec2(d1.x,0.)).rgb+texture2D(t,uv+vec2(0.,d1.y)).rgb+texture2D(t,uv-vec2(0.,d1.y)).rgb)*.25;
+c=clamp(c+(c-nb)*.6,0.,1.);
 vec2 px=6./res;vec3 b=vec3(0.);
 b+=max(texture2D(t,uv+vec2(px.x,0.)).rgb-.65,0.);b+=max(texture2D(t,uv-vec2(px.x,0.)).rgb-.65,0.);
 b+=max(texture2D(t,uv+vec2(0.,px.y)).rgb-.65,0.);b+=max(texture2D(t,uv-vec2(0.,px.y)).rgb-.65,0.);
@@ -181,7 +206,9 @@ const U=n=>gl.getUniformLocation(pg,n);
 
 let cur=0,facing="environment",stream=null,src=null,still=false;
 let zoom=1,zmax=5,hw=false,zMin=1,zMaxHw=1,vtrack=null;
-const video=document.createElement("video");video.playsInline=true;video.muted=true;
+const video=document.createElement("video");video.playsInline=true;video.muted=true;video.autoplay=true;
+video.setAttribute("playsinline","");video.setAttribute("muted","");
+video.style.cssText="position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none";document.body.appendChild(video);
 
 let ratio=null,crop=[1,1],CAP=1440;
 function size(w,h){
@@ -192,11 +219,11 @@ function size(w,h){
 function frame(t){
  const s=SIMS[cur];
  if(src){
-  const w=src.videoWidth||src.naturalWidth,h=src.videoHeight||src.naturalHeight;
+  const w=src.videoWidth||src.naturalWidth||src.width,h=src.videoHeight||src.naturalHeight||src.height;
   if(w&&(src!==video||video.readyState>=2)){
    size(w,h);gl.bindTexture(gl.TEXTURE_2D,tex);
    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src);
-   const dz=(src===video&&hw)?1:zoom;gl.uniform2fv(U("crop"),[crop[0]/dz,crop[1]/dz]);gl.uniform1f(U("m"),(src===video&&facing==="user")?1:0);
+   const dz=hw?1:zoom;gl.uniform2fv(U("crop"),[crop[0]/dz,crop[1]/dz]);gl.uniform1f(U("m"),(!still&&facing==="user")?1:0);
    gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);
    gl.uniform1f(U("fade"),s.fade);gl.uniform1f(U("gr"),s.gr);gl.uniform1f(U("vig"),s.vig);
    gl.uniform1f(U("mono"),s.mono);gl.uniform1f(U("time"),still?1:(t%1000)/10);
@@ -215,7 +242,7 @@ async function getStream(){
  return navigator.mediaDevices.getUserMedia({video:true,audio:false});
 }
 async function startCam(){
- $("msg").classList.remove("show");still=false;
+ $("msg").classList.remove("show");still=false;$("hdBtn").textContent="HD / GALERI";
  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;await new Promise(r=>setTimeout(r,250))}
  try{
   stream=await getStream();
@@ -259,47 +286,112 @@ function click(){try{const a=new(window.AudioContext||window.webkitAudioContext)
  o.type="square";o.frequency.setValueAtTime(1800,t);o.frequency.exponentialRampToValueAtTime(300,t+.05);
  g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.09);o.connect(g);g.connect(a.destination);o.start();o.stop(t+.1);setTimeout(()=>a.close(),300)}catch(e){}
  try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}}
+let actx=null;
+function ac(){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){}return actx}
+function beep(f,d=.12){try{const a=ac(),o=a.createOscillator(),g=a.createGain(),t=a.currentTime;o.type="sine";o.frequency.value=f;
+ g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(a.destination);o.start();o.stop(t+d+.02)}catch(e){}}
 function thumbUpd(){const t=$("thumb"),l=photos[photos.length-1];
- t.style.backgroundImage=l?"url("+l.url+")":"";$("tcnt").textContent=photos.length||""}
-$("snap").onclick=()=>{
- if(!src)return;
+ t.style.backgroundImage=l?"url("+(l.type==="video"?l.poster:l.url)+")":"";t.classList.toggle("vid",!!l&&l.type==="video");$("tcnt").textContent=photos.length||""}
+function addEntry(e){photos.push(e);
+ if(photos.length>30){const o=photos.shift();if(o.type==="video")URL.revokeObjectURL(o.url)}
+ thumbUpd();const t=$("thumb");t.classList.remove("pop");void t.offsetWidth;t.classList.add("pop")}
+const dateStr=()=>new Date().toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+
+let mode="foto",timerS=0,counting=null,recorder=null,recChunks=[],recTick=null,micStream=null;
+const TIMERS=[0,3,5,10];
+$("modeBtn").onclick=()=>{if(recorder||counting)return;mode=mode==="foto"?"video":"foto";$("modeBtn").textContent=mode.toUpperCase();$("snap").classList.toggle("vid",mode==="video")};
+$("timerBtn").onclick=()=>{if(recorder||counting)return;timerS=TIMERS[(TIMERS.indexOf(timerS)+1)%TIMERS.length];
+ $("timerBtn").textContent=timerS?"TIMER "+timerS+"s":"TIMER OFF";$("timerBtn").classList.toggle("on",!!timerS)};
+function countdown(sec,done){
+ let k=sec;const c=$("count");
+ const step=()=>{if(k<=0){c.classList.remove("show");counting=null;done();return}
+  c.textContent=k;c.classList.add("show");beep(k===1?1500:900);k--;counting=setTimeout(step,1000)};
+ step()}
+function cancelCount(){clearTimeout(counting);counting=null;$("count").classList.remove("show")}
+
+async function takePhoto(){
  const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
- const cap=SIMS[cur].n+" \u00b7 "+new Date().toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
- CAP=4096;frame(performance.now());const url=cv.toDataURL("image/jpeg",.95);CAP=1440;
- photos.push({url,cap,name:"film-"+SIMS[cur].n.replace(/\W+/g,"")+"-"+Date.now()+".jpg"});
- if(photos.length>40)photos.shift();
- n=n%36+1;$("cnt").textContent=String(n).padStart(2,"0");click();
- thumbUpd();const t=$("thumb");t.classList.remove("pop");void t.offsetWidth;t.classList.add("pop");
-};
+ const cap=SIMS[cur].n+" \u00b7 "+dateStr();
+ let bmp=null;
+ if(!still&&window.ImageCapture&&vtrack){
+  try{const blob=await new ImageCapture(vtrack).takePhoto();bmp=await createImageBitmap(blob,{imageOrientation:"from-image"})}catch(e){bmp=null}
+ }
+ const prev=src;let url;
+ try{if(bmp)src=bmp;CAP=4096;frame(performance.now());url=cv.toDataURL("image/jpeg",.95)}
+ catch(e){src=prev;CAP=4096;frame(performance.now());url=cv.toDataURL("image/jpeg",.95)}
+ CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
+ addEntry({type:"photo",url,cap,name:"film-"+SIMS[cur].n.replace(/\W+/g,"")+"-"+Date.now()+".jpg"});
+ n=n%36+1;$("cnt").textContent=String(n).padStart(2,"0");click()}
+
+async function startRec(){
+ if(still){alert("Mode video butuh kamera langsung, bukan foto dari galeri.");return}
+ if(!window.MediaRecorder||!cv.captureStream){alert("Browser ini belum mendukung rekam video.");return}
+ const types=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"];
+ const mt=types.find(t=>MediaRecorder.isTypeSupported(t))||"";
+ const cs=cv.captureStream(30);
+ try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});micStream.getAudioTracks().forEach(t=>cs.addTrack(t))}catch(e){micStream=null}
+ recChunks=[];
+ try{recorder=new MediaRecorder(cs,mt?{mimeType:mt,videoBitsPerSecond:8e6}:{videoBitsPerSecond:8e6})}
+ catch(e){recorder=null;alert("Rekam video gagal dimulai di browser ini.");return}
+ recorder.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data)};
+ recorder.onstop=finishRec;
+ recorder.start(1000);beep(1200,.15);
+ $("snap").classList.add("recording");$("recind").classList.add("show");$("ratSel").disabled=true;
+ const t0=Date.now();$("rect").textContent="00:00";
+ recTick=setInterval(()=>{const q=Math.floor((Date.now()-t0)/1000);$("rect").textContent=String(Math.floor(q/60)).padStart(2,"0")+":"+String(q%60).padStart(2,"0")},500)}
+function stopRec(){if(recorder&&recorder.state!=="inactive"){beep(700,.15);recorder.stop()}}
+function finishRec(){
+ clearInterval(recTick);
+ const type=(recorder&&recorder.mimeType)||"video/webm";
+ const blob=new Blob(recChunks,{type});
+ const poster=cv.toDataURL("image/jpeg",.6);
+ if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null}
+ recorder=null;recChunks=[];
+ $("snap").classList.remove("recording");$("recind").classList.remove("show");$("ratSel").disabled=false;
+ if(blob.size)addEntry({type:"video",url:URL.createObjectURL(blob),blob,poster,mime:type.split(";")[0],cap:"VIDEO \u00b7 "+SIMS[cur].n+" \u00b7 "+dateStr(),
+  name:"film-"+SIMS[cur].n.replace(/\W+/g,"")+"-"+Date.now()+"."+(type.includes("mp4")?"mp4":"webm")})}
+
+$("snap").onclick=()=>{
+ ac();
+ if(counting){cancelCount();return}
+ if(recorder){stopRec();return}
+ if(!src)return;
+ const go=mode==="foto"?takePhoto:startRec;
+ if(timerS)countdown(timerS,go);else go()};
+
 const strip=$("strip");
 const cur_=()=>Math.max(0,Math.min(photos.length-1,Math.round(strip.scrollLeft/(strip.clientWidth||1))));
-function gcount(){$("gcount").textContent=photos.length?(cur_()+1)+" / "+photos.length:""}
+function gcount(){const i=cur_();$("gcount").textContent=photos.length?(i+1)+" / "+photos.length:"";
+ [...strip.children].forEach((d,j)=>{const v=d.querySelector("video");if(v&&j!==i)v.pause()})}
 function build(){strip.innerHTML="";photos.forEach(p=>{
  const d=document.createElement("div");d.className="slide";
  const w=document.createElement("div");w.className="pola";
- const im=document.createElement("img");im.src=p.url;im.alt="Foto";
- const c=document.createElement("div");c.id="";c.style.cssText="padding:10px 4px 13px;color:#3a3a36;font:italic 18px 'Bradley Hand','Segoe Script','Comic Sans MS',cursive;text-align:center";c.textContent=p.cap;
- w.append(im,c);d.appendChild(w);strip.appendChild(d)})}
+ let m;
+ if(p.type==="video"){m=document.createElement("video");m.src=p.url;m.poster=p.poster;m.controls=true;m.playsInline=true;m.preload="metadata";m.style.cssText="display:block;max-width:100%;max-height:calc(100vh - 300px)"}
+ else{m=document.createElement("img");m.src=p.url;m.alt="Foto"}
+ const c=document.createElement("div");c.style.cssText="padding:10px 4px 13px;color:#3a3a36;font:italic 18px 'Bradley Hand','Segoe Script','Comic Sans MS',cursive;text-align:center";c.textContent=p.cap;
+ w.append(m,c);d.appendChild(w);strip.appendChild(d)})}
 function openG(i){if(!photos.length)return;build();$("ov").classList.add("show");strip.scrollLeft=i*strip.clientWidth;gcount()}
 strip.addEventListener("scroll",()=>requestAnimationFrame(gcount));
 $("thumb").onclick=()=>openG(photos.length-1);
-$("close").onclick=()=>$("ov").classList.remove("show");
-$("del").onclick=()=>{if(!photos.length)return;const i=cur_();photos.splice(i,1);thumbUpd();
+$("close").onclick=()=>{strip.querySelectorAll("video").forEach(v=>v.pause());$("ov").classList.remove("show")};
+$("del").onclick=()=>{if(!photos.length)return;const i=cur_();const o=photos.splice(i,1)[0];if(o.type==="video")URL.revokeObjectURL(o.url);thumbUpd();
  if(!photos.length){$("ov").classList.remove("show");return}
  build();strip.scrollLeft=Math.min(i,photos.length-1)*strip.clientWidth;gcount()};
 $("save").onclick=()=>{const p=photos[cur_()];if(!p)return;const a=document.createElement("a");a.href=p.url;a.download=p.name;document.body.appendChild(a);a.click();a.remove()};
 $("share").onclick=async()=>{
  const p=photos[cur_()];if(!p)return;
- try{const b=await (await fetch(p.url)).blob();
-  const f=new File([b],p.name,{type:"image/jpeg"});
+ try{const isV=p.type==="video";const b=isV?p.blob:await (await fetch(p.url)).blob();
+  const f=new File([b],p.name,{type:isV?p.mime:"image/jpeg"});
   if(navigator.canShare&&navigator.canShare({files:[f]}))await navigator.share({files:[f]});
-  else alert("Tekan lama foto lalu pilih Simpan.");
+  else alert(isV?"Pakai tombol Simpan untuk menyimpan video.":"Tekan lama foto lalu pilih Simpan.");
  }catch(e){}
 };
-$("flip").onclick=async()=>{facing=facing==="user"?"environment":"user";await startCam()};
+$("flip").onclick=async()=>{if(recorder)return;facing=facing==="user"?"environment":"user";await startCam()};
 $("pick").onclick=()=>$("file").click();
-$("file").onchange=e=>{const f=e.target.files[0];if(!f)return;
- const im=new Image();im.onload=()=>{src=im;still=true;hw=false;zmax=5;$("zoom").max=5;setZoom(1);$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
+$("file").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+ const im=new Image();im.onload=()=>{src=im;still=true;$("hdBtn").textContent="LIVE";hw=false;zmax=5;$("zoom").max=5;setZoom(1);$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
+$("hdBtn").onclick=()=>{if(recorder||counting)return;if(still)startCam();else $("file").click()};
 startCam();
 </script>
 </body>
