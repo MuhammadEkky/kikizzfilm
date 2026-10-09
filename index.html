@@ -127,6 +127,9 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .evs i{width:1px;height:6px;background:#9be5b0aa}
 .evs i.l{height:12px;background:var(--lcd)}
 .evs b{position:absolute;top:-2px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid #ffb02e;transform:translateX(-50%)}
+.seg.wrap{flex-wrap:wrap}
+.seg.wrap button{flex:1 0 30%}
+.ctl select{flex:1;min-width:0;background:#10110f;color:var(--ink);border:1px solid #333;border-radius:8px;padding:9px 6px;font:600 14px inherit;font-family:inherit}
 </style>
 </head>
 <body>
@@ -198,13 +201,14 @@ precision highp float;
 precision mediump float;
 #endif
 varying vec2 uv;uniform sampler2D t;
-uniform float con,bri,lift,roll,sat,ks,kh,cc,gr,gsz,hal,vig,mono,time,skinK,clrK,shpK,wbK,fxb,evK;
+uniform float con,bri,lift,roll,sat,ks,kh,cc,gr,gsz,hal,vig,mono,time,skinK,clrK,shpK,wbK,fxb,evK,af,pc;
 uniform float bs[6],bh[6],bl[6];
 uniform vec3 sh,hi,mw,tone;uniform vec2 res;
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
 vec3 rgb2hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);float e=1e-4;return vec3(abs(q.z+(q.w-q.y)/(6.*d+e)),d/(q.x+e),q.x);}
 vec3 hsv2rgb(vec3 c){vec4 K=vec4(1.,2./3.,1./3.,3.);vec3 p=abs(fract(c.xxx+K.xyz)*6.-K.www);return c.z*mix(K.xxx,clamp(p-K.xxx,0.,1.),c.y);}
 vec3 T(vec2 o){return texture2D(t,uv+o).rgb;}
+vec3 bigBlur(vec2 rad){vec3 sum=T(vec2(0.));for(int i=0;i<8;i++){float a=float(i)*.785398;vec2 dir=vec2(cos(a),sin(a));sum+=T(dir*rad*.5)+T(dir*rad);}return sum/17.;}
 void main(){
 vec3 c0=T(vec2(0.));vec3 c=c0;
 vec2 d1=1.1/res;
@@ -221,6 +225,14 @@ if(skinK>0.){
  vec3 h=rgb2hsv(c);float hm=h.x>.5?h.x-1.:h.x;
  float m=smoothstep(-.04,-.01,hm)*(1.-smoothstep(.09,.13,hm))*smoothstep(.12,.2,h.y)*(1.-smoothstep(.55,.7,h.y))*smoothstep(.2,.35,h.z)*skinK;
  c=mix(c,blur,m*.9);
+}
+float dc=distance(uv,vec2(.5));
+if(af>.5){
+ if(af<1.5){c=mix(c,blur,smoothstep(.25,.75,dc)*.85);}
+ else if(af<2.5){float k=smoothstep(.12,.4,abs(uv.y-.5));
+  c=mix(c,bigBlur(px*k*2.2),k);}
+ else if(af>5.5&&af<6.5){c=clamp(c+(c-blur)*1.5,0.,1.);c=pow(c,vec3(.85));}
+ else if(af>6.5&&af<7.5){vec3 bb=bigBlur(px*1.7);c=clamp(mix(c,bb,.6)+max(bb-.55,0.)*.5,0.,1.);}
 }
 float lc=lum(c);
 c=clamp(c+(c-blur)*clrK*(1.-clamp(abs(lc-.5)*1.6,0.,1.)),0.,1.);
@@ -244,6 +256,18 @@ else{
 float l=clamp(lum(c),0.,1.);
 c+=sh*(1.-l)*(1.-l)*1.4+hi*l*l*1.4;
 c=lift+c*(1.-lift);
+if(af>.5){
+ float l2=lum(c);
+ if(af<1.5){c=mix(vec3(l2),c,1.25)*vec3(1.06,1.,.88);c=(c-.5)*1.12+.5;c*=1.-.75*smoothstep(.2,.72,dc);}
+ else if(af<2.5){c=mix(vec3(l2),c,1.4);c=(c-.5)*1.08+.5;}
+ else if(af<3.5){c=mix(vec3(l2),c,1.5);c=(c-.5)*1.12+.5;}
+ else if(af<4.5){c=pow(max(c,vec3(0.)),vec3(.6));c=(c-.5)*.85+.58;}
+ else if(af<5.5){c=pow(max(c,vec3(0.)),vec3(1.7));c=(c-.5)*1.15+.48;}
+ else if(af<6.5){c=mix(vec3(l2),c,1.25);}
+ else if(af>7.5){vec3 hh=rgb2hsv(clamp(c,0.,1.));float hc=pc<.5?0.:pc<1.5?.07:pc<2.5?.15:pc<3.5?.33:pc<4.5?.62:.78;
+  float dd2=abs(hh.x-hc);dd2=min(dd2,1.-dd2);float keep=1.-smoothstep(.04,.1,dd2);c=mix(vec3(l2),c,keep);}
+ c=clamp(c,0.,1.);
+}
 float n=fract(sin(dot(floor(uv*vec2(gsz,gsz*res.y/res.x)),vec2(12.9898,78.233))+time)*43758.5453);
 c+=(n-.5)*gr*1.6*(1.-abs(l-.5)*1.3);
 if(mono>.5)c*=tone;
@@ -262,7 +286,7 @@ const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
 [[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR]].forEach(a=>gl.texParameteri(gl.TEXTURE_2D,a[0],a[1]));
 const U=n=>gl.getUniformLocation(pg,n);
 
-const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,histo:1,date:false,frame:false};
+const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,histo:1,af:0,pc:3,bk:0,b1:0,b2:1,b3:3,date:false,frame:false};
 const U_DEF=JSON.stringify(U_);
 let cur=0,facing="environment",stream=null,src=null,still=false;
 let zoom=1,zmax=5,hw=false,zMin=1,zMaxHw=1,vtrack=null;
@@ -295,7 +319,7 @@ function frame(t){
     gl.uniform1f(U("gr"),[s.gr,0,.06,.14][u.grain]);gl.uniform1f(U("gsz"),[1000,520][u.gsize]);
     gl.uniform1f(U("hal"),s.hal);gl.uniform1f(U("vig"),s.vig);gl.uniform1f(U("mono"),s.mono);
     gl.uniform1f(U("skinK"),[0,.4,.75][u.skin]);gl.uniform1f(U("fxb"),[0,.5,1][u.fxb]);
-    gl.uniform1f(U("evK"),u.ev);gl.uniform1f(U("clrK"),u.clr*.25);gl.uniform1f(U("shpK"),Math.max(0,.6+u.shp*.15));gl.uniform1f(U("wbK"),u.wb*.012);
+    gl.uniform1f(U("evK"),u.ev);gl.uniform1f(U("af"),u.af);gl.uniform1f(U("pc"),u.pc);gl.uniform1f(U("clrK"),u.clr*.25);gl.uniform1f(U("shpK"),Math.max(0,.6+u.shp*.15));gl.uniform1f(U("wbK"),u.wb*.012);
     gl.uniform1fv(U("bs"),s.bs);gl.uniform1fv(U("bh"),s.bh);gl.uniform1fv(U("bl"),s.bl);
     gl.uniform3fv(U("sh"),s.sh);gl.uniform3fv(U("hi"),s.hi);gl.uniform3fv(U("mw"),s.mw);
     gl.uniform3fv(U("tone"),[s.tone[0]*(1+u.mwc*.006),s.tone[1],s.tone[2]*(1-u.mwc*.008)]);
@@ -394,16 +418,19 @@ function compose(c){
  return o.toDataURL("image/jpeg",.95)}
 async function takePhoto(){
  const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
- const cap=SIMS[cur].n+" \u00b7 "+dateStr();
  let bmp=null;
  if(!still&&window.ImageCapture&&vtrack){
   try{const blob=await new ImageCapture(vtrack).takePhoto();bmp=await createImageBitmap(blob,{imageOrientation:"from-image"})}catch(e){bmp=null}
  }
- const prev=src;let url;
- try{if(bmp)src=bmp;CAP=4096;frame(performance.now());url=compose(cv)}
- catch(e){src=prev;CAP=4096;frame(performance.now());url=compose(cv)}
- CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
- addEntry({type:"photo",url,cap,name:"film-"+SIMS[cur].n.replace(/\W+/g,"")+"-"+Date.now()+".jpg"});
+ const prev=src,orig=cur,list=U_.bk?[U_.b1,U_.b2,U_.b3]:[cur];
+ if(bmp)src=bmp;
+ for(const idx of list){
+  cur=idx;let url;
+  try{CAP=4096;frame(performance.now());url=compose(cv)}catch(e){continue}
+  addEntry({type:"photo",url,cap:SIMS[idx].n+" \u00b7 "+dateStr(),name:"film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg"});
+  await new Promise(r=>setTimeout(r,30));
+ }
+ cur=orig;CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
  click()}
 
 async function startRec(){
@@ -442,19 +469,23 @@ $("snap").onclick=()=>{
  const go=mode==="foto"?takePhoto:startRec;
  if(timerS)countdown(timerS,go);else go()};
 
-const SEG=[["grain","Grain Effect",["Auto","Off","Lemah","Kuat"]],["gsize","Ukuran butiran",["Kecil","Besar"]],["cce","Color Chrome Effect",["Auto","Off","Lemah","Kuat"]],["fxb","Color Chrome FX Blue",["Off","Lemah","Kuat"]],["skin","Smooth Skin Effect",["Off","Lemah","Kuat"]],["dr","Dynamic Range",["DR100","DR200","DR400"]],["grid","Garis bantu (Grid)",["Off","3\u00d73","4\u00d74"]],["histo","Histogram",["Off","On"]]];
+const AFN=["Off","Toy Camera","Miniature","Pop Color","High Key","Low Key","Dynamic Tone","Soft Focus","Partial Color"];
+const SEG=[["grain","Grain Effect",["Auto","Off","Lemah","Kuat"]],["gsize","Ukuran butiran",["Kecil","Besar"]],["cce","Color Chrome Effect",["Auto","Off","Lemah","Kuat"]],["fxb","Color Chrome FX Blue",["Off","Lemah","Kuat"]],["skin","Smooth Skin Effect",["Off","Lemah","Kuat"]],["dr","Dynamic Range",["DR100","DR200","DR400"]],["grid","Garis bantu (Grid)",["Off","3\u00d73","4\u00d74"]],["histo","Histogram",["Off","On"]],["af","Advanced Filter",AFN,true],["pc","Partial Color: warna yang dipertahankan",["Merah","Oranye","Kuning","Hijau","Biru","Ungu"],true],["bk","Film Bracketing (3 film sekali jepret)",["Off","On"]]];
 const SLD=[["ev","Exposure Compensation (EV)",-3,3,1/3],["hl","Highlight Tone",-2,4,.5],["sh","Shadow Tone",-2,4,.5],["col","Color",-4,4,1],["shp","Sharpness",-4,4,1],["clr","Clarity",-5,5,1],["wb","White Balance Shift (dingin \u2194 hangat)",-9,9,1],["mwc","Warna Monokrom (hanya film B/W)",-18,18,2]];
 const TOG=[["date","Date stamp di foto"],["frame","Bingkai Instax di foto"]];
 const fmt=v=>(v>0?"+":"")+(Number.isInteger(v)?v:(+v).toFixed(1));
 function buildSheet(){const b=$("shb");b.innerHTML="";
- SEG.forEach(([k,t,o])=>{const d=document.createElement("div");d.className="ctl";d.innerHTML="<label>"+t+"</label>";
-  const g=document.createElement("div");g.className="seg";
+ SEG.forEach(([k,t,o,w])=>{const d=document.createElement("div");d.className="ctl";d.innerHTML="<label>"+t+"</label>";
+  const g=document.createElement("div");g.className="seg"+(w?" wrap":"");
   o.forEach((x,i)=>{const bt=document.createElement("button");bt.textContent=x;bt.classList.toggle("on",U_[k]===i);bt.onclick=()=>{U_[k]=i;[...g.children].forEach((y,j)=>y.classList.toggle("on",j===i));hudUpd()};g.appendChild(bt)});
   d.appendChild(g);b.appendChild(d)});
  SLD.forEach(([k,t,mn,mx,st])=>{const d=document.createElement("div");d.className="ctl";
   d.innerHTML="<label>"+t+"<b>"+fmt(U_[k])+"</b></label>";
   const r=document.createElement("input");r.type="range";r.min=mn;r.max=mx;r.step=st;r.value=U_[k];
   r.oninput=()=>{U_[k]=k==="ev"?Math.round(+r.value*3)/3:+r.value;d.querySelector("b").textContent=fmt(U_[k]);hudUpd()};d.appendChild(r);b.appendChild(d)});
+ {const d=document.createElement("div");d.className="ctl";d.innerHTML="<label>Film untuk bracketing</label>";const g=document.createElement("div");g.className="seg";
+  ["b1","b2","b3"].forEach(k=>{const sel=document.createElement("select");SIMS.forEach((m,i)=>{const o=document.createElement("option");o.value=i;o.textContent=m.n;sel.appendChild(o)});sel.value=U_[k];sel.onchange=()=>{U_[k]=+sel.value};g.appendChild(sel)});
+  d.appendChild(g);b.appendChild(d)}
  TOG.forEach(([k,t])=>{const d=document.createElement("div");d.className="ctl";d.innerHTML="<label>"+t+"</label>";
   const g=document.createElement("div");g.className="seg";
   ["Off","On"].forEach((x,i)=>{const bt=document.createElement("button");bt.textContent=x;bt.classList.toggle("on",(i===1)===U_[k]);
@@ -468,7 +499,7 @@ function hudUpd(){
  if(!evBuilt){for(let i=0;i<19;i++){const t=document.createElement("i");if(i%3===0)t.className="l";e.appendChild(t)}const b=document.createElement("b");b.id="evptr";e.appendChild(b);evBuilt=true}
  $("evptr").style.left=((U_.ev+3)/6*100)+"%";
  $("info").textContent=(FULL[sim.n]||sim.n.toUpperCase())+"  "+RATS[ri][0];
- $("simLabel").textContent="DR"+[100,200,400][U_.dr]+" WB"+fmt(U_.wb)+(U_.ev?" EV"+fmt(U_.ev):"")+["",""," GRAIN OFF"," GRAIN WEAK"," GRAIN STRONG"][U_.grain+(U_.grain?1:0)];
+ $("simLabel").textContent="DR"+[100,200,400][U_.dr]+" WB"+fmt(U_.wb)+(U_.ev?" EV"+fmt(U_.ev):"")+["",""," GRAIN OFF"," GRAIN WEAK"," GRAIN STRONG"][U_.grain+(U_.grain?1:0)]+(U_.af?" "+AFN[U_.af].toUpperCase():"")+(U_.bk?" BKT":"");
  $("grid").className="grid"+(U_.grid===1?" g3":U_.grid===2?" g4":"");
  $("hist").style.display=U_.histo?"block":"none";
  syncGrid();
