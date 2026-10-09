@@ -103,8 +103,6 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
 html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 @supports(height:100dvh){html,body,#app{height:100dvh}}
 .strip img,.strip video{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto;pointer-events:auto}
-.sflash{position:fixed;inset:0;background:#fff;z-index:4;display:none}
-.sflash.show{display:block}
 </style>
 </head>
 <body>
@@ -120,7 +118,7 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
     <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
     <div class="zoom"><input type="range" id="zoom" min="1" max="5" step="0.05" value="1" aria-label="Zoom"><span id="zval">1.0x</span></div>
     <div class="info"><span id="info"></span><span id="simLabel"></span></div>
-    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button><button class="chip" id="flashBtn">FLASH OFF</button></div>
+    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button></div>
     <div class="recind" id="recind"><i></i><span id="rect">00:00</span></div>
     <div class="count" id="count"></div>
     <div class="flash" id="flash"></div>
@@ -138,29 +136,28 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
   <p>Simpan ke Foto: tekan lama foto lalu pilih Tambah ke Foto, atau tekan Bagikan lalu gulir menu ke bawah dan pilih Simpan Gambar/Video. Tombol Unduh menyimpan ke aplikasi File.</p>
   <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="save">Unduh</button><button class="btn ghost" id="del">Hapus</button></div>
 </div>
-<div class="sflash" id="sflash"></div>
 <input type="file" id="file" accept="image/*" hidden>
 <script>
-const SIMS=[{"n":"Provia","d":"Standar, natural","con":1.06,"crv":0.3,"bri":0.0,"lift":0.0,"roll":0.1,"sat":1.05,"bs":[1.05,1,1.05,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Velvia","d":"Warna pekat, tajam","con":1.2,"crv":0.55,"bri":0.0,"lift":-0.02,"roll":0.08,"sat":1.12,"bs":[1.25,1.2,1.35,1.2,1.35,1.15],"bh":[0,0,4,0,6,0],"bl":[0.97,1,0.92,0.96,0.85,0.97],"sh":[0,0,0],"hi":[0,0,0],"cc":0.16,"gr":0.03,"hal":0.1,"vig":0.18,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Astia","d":"Lembut, kulit halus","con":0.95,"crv":0.2,"bri":0.02,"lift":0.02,"roll":0.2,"sat":0.98,"bs":[0.95,0.95,0.9,0.9,0.85,0.9],"bh":[2,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.008,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.12,"vig":0.15,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Classic Chrome","d":"Kalem, dokumenter","con":1.14,"crv":0.5,"bri":0.0,"lift":0.03,"roll":0.15,"sat":0.8,"bs":[0.9,0.8,0.62,0.85,0.85,0.7],"bh":[3,-4,-14,-4,-10,0],"bl":[0.98,0.96,0.88,0.94,0.74,0.95],"sh":[-0.015,0.005,0.045],"hi":[0.02,0.015,-0.005],"cc":0.1,"gr":0.05,"hal":0.08,"vig":0.25,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Classic Neg.","d":"Film negatif jadul","con":1.12,"crv":0.6,"bri":0.0,"lift":0.04,"roll":0.1,"sat":0.95,"bs":[1.1,1,1.05,1,0.9,1.1],"bh":[4,3,16,6,-4,6],"bl":[0.98,1,0.9,0.95,0.85,1],"sh":[-0.02,0.045,0.05],"hi":[0.065,0.012,-0.025],"cc":0.1,"gr":0.07,"hal":0.25,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Eterna","d":"Sinematik","con":0.94,"crv":0.25,"bri":0.0,"lift":0.032,"roll":0.4,"sat":0.72,"bs":[0.9,0.85,0.7,0.8,0.75,0.8],"bh":[0,0,-8,-6,-8,0],"bl":[1,1,0.95,1,0.9,1],"sh":[0,0.025,0.04],"hi":[0.02,0.012,0],"cc":0.04,"gr":0.04,"hal":0.1,"vig":0.2,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Acros","d":"Hitam putih","con":1.18,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Pro Neg. Hi","d":"Kontras potret studio","con":1.08,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.2,"sat":0.95,"bs":[0.98,0.98,0.9,0.9,0.88,0.95],"bh":[1,0,-4,0,-4,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.012,0.01,0],"cc":0.04,"gr":0.03,"hal":0.1,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Pro Neg. Std","d":"Lembut, natural","con":0.94,"crv":0.2,"bri":0.02,"lift":0.03,"roll":0.3,"sat":0.85,"bs":[0.95,0.95,0.85,0.85,0.8,0.9],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Nostalgic Neg.","d":"Hangat, ambar","con":1.06,"crv":0.45,"bri":0.0,"lift":0.06,"roll":0.3,"sat":1.0,"bs":[1.15,1.12,0.78,0.78,0.82,1.0],"bh":[4,2,-12,-6,-8,2],"bl":[0.98,1,0.9,0.95,0.85,1],"sh":[0.05,0.025,0],"hi":[0.07,0.04,-0.03],"cc":0.1,"gr":0.06,"hal":0.3,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Reala Ace","d":"Akurat, jernih","con":1.08,"crv":0.4,"bri":0.0,"lift":0.005,"roll":0.12,"sat":1.05,"bs":[1.05,1,1,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.01,0.005,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Eterna Bleach Bypass","d":"Pudar, kontras keras","con":1.38,"crv":0.75,"bri":0.0,"lift":0.0,"roll":0.05,"sat":0.45,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.02],"hi":[0,0,0],"cc":0.08,"gr":0.07,"hal":0.1,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Monochrome","d":"Hitam putih biasa","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
-{"n":"Sepia","d":"Cokelat jadul","con":1.08,"crv":0.4,"bri":0.0,"lift":0.05,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.06,"hal":0.1,"vig":0.3,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1.1,0.92,0.7]},
-{"n":"Acros + Kuning","d":"Langit lebih gelap","con":1.18,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
-{"n":"Acros + Merah","d":"Langit sangat gelap","con":1.22,"crv":0.55,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
-{"n":"Acros + Hijau","d":"Kulit halus, daun terang","con":1.12,"crv":0.5,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]},
-{"n":"Mono + Kuning","d":"Hitam putih, langit lebih gelap","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
-{"n":"Mono + Merah","d":"Hitam putih, langit sangat gelap","con":1.1,"crv":0.4,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
-{"n":"Mono + Hijau","d":"Hitam putih, daun lebih terang","con":1.06,"crv":0.35,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
+const SIMS=[{"n":"Provia","d":"Standar, natural","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.0,"roll":0.08,"sat":1.05,"bs":[1.05,1,1.05,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.15,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Velvia","d":"Warna pekat, tajam","con":1.0,"ks":0.4,"kh":0.3,"bri":0.0,"lift":-0.01,"roll":0.05,"sat":1.1,"bs":[1.3,1.25,1.35,1.25,1.4,1.2],"bh":[0,0,7,0,-4,0],"bl":[0.95,1,0.9,0.95,0.8,0.95],"sh":[-0.015,0.01,0.03],"hi":[0,0,0],"cc":0.2,"gr":0.03,"hal":0.1,"vig":0.18,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Astia","d":"Lembut, kulit halus","con":1.0,"ks":-0.05,"kh":-0.05,"bri":0.015,"lift":0.02,"roll":0.2,"sat":0.97,"bs":[0.95,0.95,0.9,0.9,0.85,0.9],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.008,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.12,"vig":0.15,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Classic Chrome","d":"Kalem, dokumenter","con":1.0,"ks":0.5,"kh":0.02,"bri":0.0,"lift":0.02,"roll":0.15,"sat":0.78,"bs":[0.85,0.75,0.62,0.8,1.0,0.7],"bh":[2,-3,-10,-6,-20,0],"bl":[1,1,0.9,0.95,0.78,0.95],"sh":[-0.01,0.005,0.03],"hi":[0.015,0.012,0],"cc":0.12,"gr":0.05,"hal":0.06,"vig":0.25,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Classic Neg.","d":"Film negatif jadul","con":1.0,"ks":0.12,"kh":0.55,"bri":0.0,"lift":0.03,"roll":0.0,"sat":1.0,"bs":[1.3,0.8,1.0,0.7,0.65,1.0],"bh":[0,2,10,2,0,0],"bl":[1,1,0.9,0.95,0.75,1],"sh":[-0.025,0.03,0.05],"hi":[0.055,0.012,-0.02],"cc":0.16,"gr":0.07,"hal":0.25,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Eterna","d":"Sinematik","con":1.0,"ks":-0.02,"kh":-0.12,"bri":0.0,"lift":0.032,"roll":0.4,"sat":0.72,"bs":[0.9,0.85,0.7,0.8,0.75,0.8],"bh":[0,0,-8,-6,-8,0],"bl":[1,1,0.95,1,0.9,1],"sh":[0,0.025,0.04],"hi":[0.02,0.012,0],"cc":0.04,"gr":0.04,"hal":0.1,"vig":0.2,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Acros","d":"Hitam putih","con":1.0,"ks":0.35,"kh":0.3,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Pro Neg. Hi","d":"Kontras potret studio","con":1.0,"ks":0.1,"kh":0.08,"bri":0.0,"lift":0.02,"roll":0.2,"sat":0.95,"bs":[0.98,0.98,0.9,0.9,0.88,0.95],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.012,0.01,0],"cc":0.04,"gr":0.03,"hal":0.1,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Pro Neg. Std","d":"Lembut, natural","con":1.0,"ks":-0.1,"kh":-0.15,"bri":0.02,"lift":0.03,"roll":0.3,"sat":0.85,"bs":[0.95,0.95,0.85,0.85,0.8,0.9],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.012],"hi":[0.02,0.01,0],"cc":0.03,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Nostalgic Neg.","d":"Hangat, ambar","con":1.0,"ks":0.2,"kh":0.1,"bri":0.0,"lift":0.06,"roll":0.3,"sat":1.0,"bs":[1.2,1.15,0.78,0.78,0.82,1.0],"bh":[4,2,-12,-6,-8,2],"bl":[1,1,0.9,0.95,0.8,1],"sh":[0.05,0.025,0],"hi":[0.07,0.04,-0.03],"cc":0.1,"gr":0.06,"hal":0.3,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Reala Ace","d":"Akurat, jernih","con":1.0,"ks":0.2,"kh":0.15,"bri":0.0,"lift":0.005,"roll":0.1,"sat":1.05,"bs":[1.05,1,1,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.01,0.005,0],"cc":0.06,"gr":0.03,"hal":0.1,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Eterna Bleach Bypass","d":"Pudar, kontras keras","con":1.0,"ks":0.6,"kh":0.5,"bri":0.0,"lift":0.0,"roll":0.0,"sat":0.45,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0.01,0.02],"hi":[0,0,0],"cc":0.08,"gr":0.07,"hal":0.1,"vig":0.3,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Monochrome","d":"Hitam putih biasa","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Sepia","d":"Cokelat jadul","con":1.0,"ks":0.15,"kh":0.1,"bri":0.0,"lift":0.05,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.06,"hal":0.1,"vig":0.3,"mono":1,"mw":[0.299,0.587,0.114],"tone":[1.1,0.92,0.7]},
+{"n":"Acros + Kuning","d":"Langit lebih gelap","con":1.0,"ks":0.35,"kh":0.3,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
+{"n":"Acros + Merah","d":"Langit sangat gelap","con":1.0,"ks":0.4,"kh":0.32,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
+{"n":"Acros + Hijau","d":"Kulit halus, daun terang","con":1.0,"ks":0.3,"kh":0.28,"bri":0.0,"lift":0.01,"roll":0.1,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.1,"hal":0.08,"vig":0.25,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]},
+{"n":"Mono + Kuning","d":"Hitam putih, langit lebih gelap","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
+{"n":"Mono + Merah","d":"Hitam putih, langit sangat gelap","con":1.0,"ks":0.2,"kh":0.15,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
+{"n":"Mono + Hijau","d":"Hitam putih, daun lebih terang","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.02,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0.06,"gr":0.05,"hal":0.1,"vig":0.15,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
 
 const $=id=>document.getElementById(id);
 const cv=$("cv"),gl=cv.getContext("webgl",{preserveDrawingBuffer:true});
@@ -172,7 +169,7 @@ precision highp float;
 precision mediump float;
 #endif
 varying vec2 uv;uniform sampler2D t;
-uniform float con,bri,lift,roll,sat,crv,cc,gr,hal,vig,mono,time;
+uniform float con,bri,lift,roll,sat,ks,kh,cc,gr,hal,vig,mono,time;
 uniform float bs[6],bh[6],bl[6];
 uniform vec3 sh,hi,mw,tone;uniform vec2 res;
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
@@ -189,7 +186,8 @@ b+=max(texture2D(t,uv+px).rgb-.65,0.);b+=max(texture2D(t,uv-px).rgb-.65,0.);
 b+=max(texture2D(t,uv+vec2(px.x,-px.y)).rgb-.65,0.);b+=max(texture2D(t,uv+vec2(-px.x,px.y)).rgb-.65,0.);
 c+=b*.125*hal*3.*vec3(1.,.5,.35);
 c=clamp(c,0.,1.);
-c=mix(c,c*c*(3.-2.*c),crv);
+vec3 lo=.5*pow(max(2.*c,vec3(1e-4)),vec3(1.+ks));vec3 hi2=1.-.5*pow(max(2.*(1.-c),vec3(1e-4)),vec3(1.+kh));
+c=mix(lo,hi2,step(.5,c));
 c=clamp((c-.5)*con+.5+bri,0.,1.);
 c=c*(1.+roll)/(1.+roll*c);
 if(mono>.5){c=vec3(dot(c,mw));}
@@ -246,7 +244,7 @@ function frame(t){
    gl.uniform1f(U("time"),still?1:(t%1000)/10);gl.uniform2f(U("res"),cv.width,cv.height);
    if(!SAFE){
     gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);gl.uniform1f(U("lift"),s.lift);gl.uniform1f(U("roll"),s.roll);
-    gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("crv"),s.crv);gl.uniform1f(U("cc"),s.cc);gl.uniform1f(U("gr"),s.gr);
+    gl.uniform1f(U("sat"),s.sat);gl.uniform1f(U("ks"),s.ks);gl.uniform1f(U("kh"),s.kh);gl.uniform1f(U("cc"),s.cc);gl.uniform1f(U("gr"),s.gr);
     gl.uniform1f(U("hal"),s.hal);gl.uniform1f(U("vig"),s.vig);gl.uniform1f(U("mono"),s.mono);
     gl.uniform1fv(U("bs"),s.bs);gl.uniform1fv(U("bh"),s.bh);gl.uniform1fv(U("bl"),s.bl);
     gl.uniform3fv(U("sh"),s.sh);gl.uniform3fv(U("hi"),s.hi);gl.uniform3fv(U("mw"),s.mw);gl.uniform3fv(U("tone"),s.tone);
@@ -270,8 +268,8 @@ async function startCam(){
  try{
   stream=await getStream();
   video.srcObject=stream;await video.play();src=video;
-  vtrack=stream.getVideoTracks()[0];hw=false;torchOK=false;torchState=false;
-  try{const c=vtrack.getCapabilities&&vtrack.getCapabilities();if(c&&c.zoom&&c.zoom.max>c.zoom.min){hw=true;zMin=c.zoom.min;zMaxHw=c.zoom.max}if(c&&c.torch)torchOK=true}catch(e){}
+  vtrack=stream.getVideoTracks()[0];hw=false;
+  try{const c=vtrack.getCapabilities&&vtrack.getCapabilities();if(c&&c.zoom&&c.zoom.max>c.zoom.min){hw=true;zMin=c.zoom.min;zMaxHw=c.zoom.max}}catch(e){}
   zmax=hw?Math.min(zMaxHw,10):5;$("zoom").max=zmax;zoom=1;setZoom(1);
   const st=vtrack.getSettings();
   if(st.facingMode)facing=st.facingMode==="user"?"user":"environment";
@@ -293,7 +291,7 @@ pick(0);
 const photos=[];
 function setZoom(z){
  zoom=Math.max(1,Math.min(zmax,z));$("zoom").value=zoom;$("zval").textContent=zoom.toFixed(1)+"x";
- if(hw&&vtrack){vtrack.applyConstraints({advanced:[Object.assign({zoom:Math.max(zMin,Math.min(zMaxHw,zoom))},torchState?{torch:true}:{})]}).catch(()=>{hw=false})}
+ if(hw&&vtrack){vtrack.applyConstraints({advanced:[{zoom:Math.max(zMin,Math.min(zMaxHw,zoom))}]}).catch(()=>{hw=false})}
 }
 $("zoom").oninput=e=>setZoom(+e.target.value);
 const vf=document.querySelector(".vf");
@@ -314,23 +312,12 @@ function ac(){try{if(!actx)actx=new(window.AudioContext||window.webkitAudioConte
 function beep(f,d=.12){try{const a=ac(),o=a.createOscillator(),g=a.createGain(),t=a.currentTime;o.type="sine";o.frequency.value=f;
  g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(a.destination);o.start();o.stop(t+d+.02)}catch(e){}}
 function thumbUpd(){const t=$("thumb"),l=photos[photos.length-1];
- t.style.backgroundImage=l?"url("+(l.type==="video"?l.poster:l.url)+")":"";t.classList.toggle("vid",!!l&&l.type==="video");$("tcnt").textContent=photos.length||""}
+ t.style.backgroundImage=l?"url("+(l.type==="video"?l.poster:l.url)+")":"";t.classList.toggle("vid",!!l&&l.type==="video");$("tcnt").textContent=photos.length||"";$("cnt").textContent=String(photos.length).padStart(2,"0")}
 function addEntry(e){photos.push(e);
  if(photos.length>30){const o=photos.shift();if(o.type==="video")URL.revokeObjectURL(o.url)}
  thumbUpd();const t=$("thumb");t.classList.remove("pop");void t.offsetWidth;t.classList.add("pop")}
 const dateStr=()=>new Date().toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
 
-let torchOK=false,torchState=false,flashOn=false;
-function flashKind(){if(still)return"none";if(facing==="user")return"screen";return torchOK?"torch":"none"}
-function setTorch(on){torchState=on;if(!vtrack)return Promise.resolve();
- const a={torch:on};if(hw)a.zoom=Math.max(zMin,Math.min(zMaxHw,zoom));
- return vtrack.applyConstraints({advanced:[a]}).catch(()=>{})}
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function preFlash(k){if(k==="torch"){await setTorch(true);await wait(500)}else if(k==="screen"){$("sflash").classList.add("show");await wait(450)}}
-function postFlash(k){if(k==="torch")setTorch(false);else if(k==="screen")$("sflash").classList.remove("show")}
-$("flashBtn").onclick=()=>{if(recorder||counting)return;flashOn=!flashOn;
- $("flashBtn").textContent=flashOn?"FLASH ON":"FLASH OFF";$("flashBtn").classList.toggle("on",flashOn);
- if(flashOn&&flashKind()==="none"&&!still)alert("Kamera belakang di browser ini belum bisa menyalakan lampu flash (iPhone/Safari memang belum mengizinkan). Pakai kamera depan, layar akan menyala putih sebagai flash.")};
 let mode="foto",timerS=0,counting=null,recorder=null,recChunks=[],recTick=null,micStream=null;
 const TIMERS=[0,3,5,10];
 $("modeBtn").onclick=()=>{if(recorder||counting)return;mode=mode==="foto"?"video":"foto";$("modeBtn").textContent=mode.toUpperCase();$("snap").classList.toggle("vid",mode==="video")};
@@ -344,8 +331,6 @@ function countdown(sec,done){
 function cancelCount(){clearTimeout(counting);counting=null;$("count").classList.remove("show")}
 
 async function takePhoto(){
- const fk=flashOn?flashKind():"none";
- if(fk!=="none")await preFlash(fk);
  const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
  const cap=SIMS[cur].n+" \u00b7 "+dateStr();
  let bmp=null;
@@ -356,9 +341,8 @@ async function takePhoto(){
  try{if(bmp)src=bmp;CAP=4096;frame(performance.now());url=cv.toDataURL("image/jpeg",.95)}
  catch(e){src=prev;CAP=4096;frame(performance.now());url=cv.toDataURL("image/jpeg",.95)}
  CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
- postFlash(fk);
  addEntry({type:"photo",url,cap,name:"film-"+SIMS[cur].n.replace(/\W+/g,"")+"-"+Date.now()+".jpg"});
- n=n%36+1;$("cnt").textContent=String(n).padStart(2,"0");click()}
+ click()}
 
 async function startRec(){
  if(still){alert("Mode video butuh kamera langsung, bukan foto dari galeri.");return}
@@ -373,13 +357,12 @@ async function startRec(){
  recorder.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data)};
  recorder.onstop=finishRec;
  recorder.start(1000);beep(1200,.15);
- if(flashOn&&flashKind()==="torch")setTorch(true);
  $("snap").classList.add("recording");$("recind").classList.add("show");$("ratSel").disabled=true;
  const t0=Date.now();$("rect").textContent="00:00";
  recTick=setInterval(()=>{const q=Math.floor((Date.now()-t0)/1000);$("rect").textContent=String(Math.floor(q/60)).padStart(2,"0")+":"+String(q%60).padStart(2,"0")},500)}
 function stopRec(){if(recorder&&recorder.state!=="inactive"){beep(700,.15);recorder.stop()}}
 function finishRec(){
- clearInterval(recTick);if(torchState)setTorch(false);
+ clearInterval(recTick);
  const type=(recorder&&recorder.mimeType)||"video/webm";
  const blob=new Blob(recChunks,{type});
  const poster=cv.toDataURL("image/jpeg",.6);
