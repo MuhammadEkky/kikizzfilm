@@ -137,10 +137,10 @@ background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 
 #start.hide{display:none}
 #start h1{margin:0;font-size:30px;font-style:italic;letter-spacing:.06em}
 #start h2{margin:6px 0 0;font-size:13px;letter-spacing:.14em;color:var(--dim);font-weight:600}
-.modes{display:flex;gap:12px;width:100%;max-width:420px}
-.mc{flex:1;background:#1b1c19;border:2px solid #333;border-radius:14px;padding:16px 10px;color:var(--ink);font-family:inherit;display:flex;flex-direction:column;gap:6px;align-items:center}
+.modes{display:flex;gap:8px;width:100%;max-width:440px}
+.mc{flex:1;background:#1b1c19;border:2px solid #333;border-radius:14px;padding:14px 6px;color:var(--ink);font-family:inherit;display:flex;flex-direction:column;gap:6px;align-items:center}
 .mc.on{border-color:var(--fuji);background:#233a2c}
-.mc b{font-size:20px}.mc span{font-size:13px;color:var(--dim);line-height:1.3}
+.mc b{font-size:17px}.mc span{font-size:12px;color:var(--dim);line-height:1.3}
 .rs{width:100%;max-width:420px}
 .rs button{flex:1 0 21%}
 </style>
@@ -179,10 +179,8 @@ background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 
   <h2>PILIH MODE</h2>
   <div class="modes">
     <button class="mc on" id="mDigi" data-app="digicam"><b>Digicam</b><span>Simulasi film, efek &amp; setelan lengkap</span></button>
-    <button class="mc" id="mKam" data-app="kamera"><b>Kamera</b><span>Biasa, hasil langsung dikompres jadi &le;100 KB</span></button>
+    <button class="mc" id="mKam" data-app="kamera"><b>Kamera 100KB</b><span>Tanpa filter, hasil dikompres &le;100 KB</span></button>
   </div>
-  <h2>RASIO GAMBAR</h2>
-  <div class="seg wrap rs" id="startRat"></div>
   <button class="btn" id="go" style="min-width:200px;margin-top:6px">Mulai</button>
 </div>
 <div class="ov" id="ov">
@@ -216,6 +214,7 @@ const SIMS=[{"n":"Provia","d":"Standard","con":1.0,"ks":0.16,"kh":0.14,"bri":0.0
 {"n":"Mono + G","d":"Mono green filter","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.01,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0.012,"hal":0,"vig":0.02,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
 /* film netral untuk mode Kamera biasa */
 const NEUT={"n":"Normal","con":1,"ks":0,"kh":0,"bri":0,"lift":0,"roll":0,"sat":1,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0,"hal":0,"vig":0,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]};
+SIMS.unshift(Object.assign({},NEUT,{n:"Tanpa Filter",d:"Polos"}));
 let app="digicam";
 const MAXB=100000;
 
@@ -329,7 +328,7 @@ const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
 [[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR]].forEach(a=>gl.texParameteri(gl.TEXTURE_2D,a[0],a[1]));
 const U=n=>gl.getUniformLocation(pg,n);
 
-const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,gridc:0,gridp:false,lleak:0,llc:0,ext:0,hlx:0,exp:0,nr:0,drp:0,mgc:0,xf:0,histo:1,af:0,pc:3,bk:0,b1:0,b2:1,b3:3,date:false,frame:false};
+const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,gridc:0,gridp:false,lleak:0,llc:0,ext:0,hlx:0,exp:0,nr:0,drp:0,mgc:0,xf:0,histo:1,af:0,pc:3,bk:0,b1:1,b2:2,b3:4,date:false,frame:false};
 const U_DEF=JSON.stringify(U_);
 /* pengaturan netral untuk mode Kamera (hanya EV yang ikut) */
 const U_N=Object.assign(JSON.parse(U_DEF),{shp:-4,xf:0,af:0,gridp:false,date:false,frame:false,bk:0});
@@ -347,7 +346,7 @@ function size(w,h){
  const W=Math.round(cw*k),H=Math.round(ch*k);
  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;gl.viewport(0,0,W,H)}}
 function frame(t){
- const kam=app==="kamera",s=kam?NEUT:SIMS[cur];
+ const kam=app!=="digicam",s=kam?NEUT:SIMS[cur];
  if(src){
   const w=src.videoWidth||src.naturalWidth||src.width,h=src.videoHeight||src.naturalHeight||src.height;
   if(w&&(src!==video||video.readyState>=2)){
@@ -406,7 +405,7 @@ let ri=0;function upd(){$("simName").textContent=SIMS[cur].n;$("ratName").textCo
 function pick(i){cur=i;upd()}
 const RATS=[["Asli",null],["3:2",[3,2]],["2:3",[2,3]],["1:1",[1,1]],["4:3",[4,3]],["3:4",[3,4]],["16:9",[16,9]],["9:16",[9,16]],["5:4",[5,4]],["4:5",[4,5]],["7:6",[7,6]],["65:24",[65,24]]];
 RATS.forEach((r,i)=>{const o=document.createElement("option");o.value=i;o.textContent=r[0];$("ratSel").appendChild(o)});
-function setRat(i){ri=i;ratio=RATS[i][1];$("ratSel").value=i;upd();[...$("startRat").children].forEach((b,j)=>b.classList.toggle("on",j===i))}
+function setRat(i){ri=i;ratio=RATS[i][1];$("ratSel").value=i;upd()}
 $("ratSel").onchange=e=>setRat(+e.target.value);
 
 const photos=[];
@@ -487,19 +486,19 @@ async function to100(c){
 
 async function takePhoto(){
  rollLeak();
- const kam=app==="kamera";
+ const kam=app==="kamera",pol=app==="polos";
  const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
  let bmp=null;
  if(!still&&window.ImageCapture&&vtrack){
   try{const blob=await new ImageCapture(vtrack).takePhoto();bmp=await createImageBitmap(blob,{imageOrientation:"from-image"})}catch(e){bmp=null}
  }
- const prev=src,orig=cur,list=kam?[cur]:(U_.bk?[U_.b1,U_.b2,U_.b3]:[cur]);
+ const prev=src,orig=cur,list=(kam||pol)?[cur]:(U_.bk?[U_.b1,U_.b2,U_.b3]:[cur]);
  if(bmp)src=bmp;
  for(const idx of list){
   cur=idx;let url,kb=0;
   try{CAP=kam?1920:4096;frame(performance.now());
-   if(kam){const r=await to100(cv);url=r.u;kb=r.kb}else url=compose(cv)}catch(e){continue}
-  addEntry({type:"photo",url,cap:kam?(kb+" KB \u00b7 "+dateStr()):(SIMS[idx].n+" \u00b7 "+dateStr()),name:kam?("kamera-100kb-"+Date.now()+".jpg"):("film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg")});
+   if(kam){const r=await to100(cv);url=r.u;kb=r.kb}else if(pol)url=cv.toDataURL("image/jpeg",.95);else url=compose(cv)}catch(e){continue}
+  addEntry({type:"photo",url,cap:kam?(kb+" KB \u00b7 "+dateStr()):pol?("Tanpa filter \u00b7 "+dateStr()):(SIMS[idx].n+" \u00b7 "+dateStr()),name:kam?("kamera-100kb-"+Date.now()+".jpg"):pol?("polos-"+Date.now()+".jpg"):("film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg")});
   await new Promise(r=>setTimeout(r,30));
  }
  cur=orig;CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
@@ -570,9 +569,9 @@ function hudUpd(){
  const sim=SIMS[cur],e=$("evs");
  if(!evBuilt){for(let i=0;i<19;i++){const t=document.createElement("i");if(i%3===0)t.className="l";e.appendChild(t)}const b=document.createElement("b");b.id="evptr";e.appendChild(b);evBuilt=true}
  $("evptr").style.left=((U_.ev+3)/6*100)+"%";
- if(app==="kamera"){
-  $("info").textContent="KAMERA  "+RATS[ri][0];
-  $("simLabel").textContent="MAX 100KB"+(U_.ev?" EV"+fmt(U_.ev):"");
+ if(app!=="digicam"){
+  $("info").textContent=(app==="polos"?"TANPA FILTER  ":"KAMERA  ")+RATS[ri][0];
+  $("simLabel").textContent=(app==="polos"?"ASLI":"MAX 100KB")+(U_.ev?" EV"+fmt(U_.ev):"");
   $("grid").className="grid";$("hist").style.display=U_.histo?"block":"none";
   return}
  $("info").textContent=(FULL[sim.n]||sim.n.toUpperCase())+"  "+RATS[ri][0];
@@ -655,12 +654,11 @@ $("file").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
 
 /* layar awal: pilih Digicam / Kamera 100KB + rasio */
 let pendingApp="digicam",started=false;
-RATS.forEach((r,i)=>{const b=document.createElement("button");b.textContent=r[0];b.onclick=()=>setRat(i);$("startRat").appendChild(b)});
 document.querySelectorAll(".mc").forEach(b=>b.onclick=()=>{pendingApp=b.dataset.app;document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x===b))});
 function applyApp(){
- app=pendingApp;const kam=app==="kamera";
+ app=pendingApp;const kam=app!=="digicam";
  $("app").classList.toggle("kam",kam);
- $("badge").innerHTML=kam?"KAMERA<small>MAX 100 KB</small>":"FILM CAM<small>FILM SIMULATION</small>";
+ $("badge").innerHTML=app==="kamera"?"KAMERA<small>MAX 100 KB</small>":app==="polos"?"KAMERA<small>TANPA FILTER</small>":"FILM CAM<small>FILM SIMULATION</small>";
  if(kam){mode="foto";$("modeBtn").textContent="FOTO";$("snap").classList.remove("vid")}
  dstUpd();upd()}
 $("go").onclick=()=>{
@@ -669,7 +667,7 @@ $("go").onclick=()=>{
 $("menuBtn").onclick=()=>{if(recorder||counting)return;pendingApp=app;
  document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x.dataset.app===app));
  $("sheet").classList.remove("show");$("start").classList.remove("hide")};
-pick(0);setRat(0);hudUpd();
+pick(1);setRat(0);hudUpd();
 </script>
 </body>
 </html>
