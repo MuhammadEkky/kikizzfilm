@@ -22,7 +22,7 @@ background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 
 .plate{position:relative;height:104px;border-radius:18px 18px 6px 6px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
 background:linear-gradient(180deg,#e4e4df 0%,#b4b4ae 40%,#d3d3cd 52%,#8f8f8a 100%);box-shadow:0 2px 0 #fff6 inset,0 -3px 6px #0005 inset,0 6px 14px #000a}
 .plate::before{content:"";position:absolute;left:50%;top:-7px;width:92px;height:12px;transform:translateX(-50%);border-radius:5px 5px 0 0;background:linear-gradient(#cfcfc9,#7d7d78)}
-.badge{position:absolute;left:50%;top:16px;transform:translateX(-50%);text-align:center;color:#2a2a28;font-weight:700;font-size:17px;letter-spacing:.06em;font-style:italic;text-shadow:0 1px 0 #fff8}
+.badge{position:absolute;left:50%;top:16px;transform:translateX(-50%);text-align:center;color:#2a2a28;font-weight:700;font-size:17px;letter-spacing:.06em;font-style:italic;text-shadow:0 1px 0 #fff8;white-space:nowrap}
 .badge small{display:block;font-size:10px;font-style:normal;font-weight:600;letter-spacing:.12em;color:#55554f}
 .dial{position:relative;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 8px #0008,0 0 0 2px #4446}
 .ring{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(#2e2e2c 0 4deg,#9a9a95 4deg 8deg);transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
@@ -31,6 +31,8 @@ background:linear-gradient(180deg,#e4e4df 0%,#b4b4ae 40%,#d3d3cd 52%,#8f8f8a 100
 .dial .cap{font-size:9px;letter-spacing:.14em;color:var(--dim)}
 .dial .val{font-size:12.5px;font-weight:700;line-height:1.05;color:var(--ink);max-width:56px}
 .dial select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border-radius:50%}
+.kam .d1{visibility:hidden}
+.kam #modeBtn,.kam #setBtn{display:none}
 /* screen */
 .bezel{position:relative;flex:1;min-height:0;margin:10px 4px;border-radius:14px;padding:9px;background:linear-gradient(145deg,#2a2a28,#0b0b0a);box-shadow:0 0 0 2px #555 inset,0 0 0 4px #111,0 10px 22px #000a}
 .vf{position:relative;width:100%;height:100%;border-radius:7px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #000,0 0 18px #000 inset}
@@ -88,8 +90,8 @@ background:conic-gradient(from 20deg,#f0f0eb,#8a8a85,#e9e9e4,#7d7d78,#f0f0eb);bo
 .strip::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:6px 4px}
 .slide .pola{transform:none}
-.tools{position:absolute;top:40px;left:0;right:0;display:flex;justify-content:center;gap:8px;pointer-events:none}
-.chip{pointer-events:auto;background:#000a;color:var(--lcd);border:1px solid #2fb36b66;border-radius:14px;padding:6px 12px;font:700 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.tools{position:absolute;top:40px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.chip{pointer-events:auto;background:#000a;color:var(--lcd);border:1px solid #2fb36b66;border-radius:14px;padding:6px 9px;font:700 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
 .chip.on{background:var(--fuji);color:#06130b}
 .recind{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:7px;padding:4px 11px;border-radius:12px;background:#000b;color:#fff;font:700 14px ui-monospace,Menlo,Consolas,monospace}
 .recind.show{display:flex}
@@ -129,13 +131,25 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .seg.wrap{flex-wrap:wrap}
 .seg.wrap button{flex:1 0 30%}
 .ctl select{flex:1;min-width:0;background:#10110f;color:var(--ink);border:1px solid #333;border-radius:8px;padding:9px 6px;font:600 14px inherit;font-family:inherit}
+/* start screen */
+#start{position:fixed;inset:0;z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));text-align:center;overflow-y:auto;
+background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 0 0/5px 5px}
+#start.hide{display:none}
+#start h1{margin:0;font-size:30px;font-style:italic;letter-spacing:.06em}
+#start h2{margin:6px 0 0;font-size:13px;letter-spacing:.14em;color:var(--dim);font-weight:600}
+.modes{display:flex;gap:12px;width:100%;max-width:420px}
+.mc{flex:1;background:#1b1c19;border:2px solid #333;border-radius:14px;padding:16px 10px;color:var(--ink);font-family:inherit;display:flex;flex-direction:column;gap:6px;align-items:center}
+.mc.on{border-color:var(--fuji);background:#233a2c}
+.mc b{font-size:20px}.mc span{font-size:13px;color:var(--dim);line-height:1.3}
+.rs{width:100%;max-width:420px}
+.rs button{flex:1 0 21%}
 </style>
 </head>
 <body>
 <div id="app">
   <div class="plate">
-    <div class="dial"><i class="ring" id="ring1"></i><div class="face"><span class="cap">FILM</span><span class="val" id="simName"></span></div><select id="simSel" aria-label="Filter film"></select></div>
-    <div class="badge">FILM CAM<small>FILM SIMULATION</small></div>
+    <div class="dial d1"><i class="ring" id="ring1"></i><div class="face"><span class="cap">FILM</span><span class="val" id="simName"></span></div><select id="simSel" aria-label="Filter film"></select></div>
+    <div class="badge" id="badge">FILM CAM<small>FILM SIMULATION</small></div>
     <div class="lcd"><span>EXP</span><b id="cnt">00</b><span>/36</span></div>
     <div class="dial"><i class="ring" id="ring2"></i><div class="face"><span class="cap">UKURAN</span><span class="val" id="ratName" style="font-size:17px"></span></div><select id="ratSel" aria-label="Ukuran foto"></select></div>
   </div>
@@ -147,7 +161,7 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
     <canvas class="grid" id="grid"></canvas>
     <div class="ev"><button id="evm" aria-label="Eksposur kurang">&minus;</button><div class="evs" id="evs"></div><button id="evp" aria-label="Eksposur tambah">+</button></div>
     <div class="info"><span id="info"></span><span id="simLabel"></span></div>
-    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button><button class="chip" id="setBtn">SETELAN</button></div>
+    <div class="tools"><button class="chip" id="modeBtn">FOTO</button><button class="chip" id="timerBtn">TIMER OFF</button><button class="chip" id="setBtn">SETELAN</button><button class="chip" id="menuBtn">MENU</button></div>
     <div class="recind" id="recind"><i></i><span id="rect">00:00</span></div>
     <div class="count" id="count"></div>
     <div class="dst" id="dst"></div>
@@ -159,6 +173,17 @@ html,body{touch-action:manipulation;-webkit-user-select:none;user-select:none}
     <div class="barrel"><button class="shutter" id="snap" aria-label="Ambil foto"></button></div>
     <button class="thumb r" id="thumb" aria-label="Galeri foto"><b id="tcnt"></b></button>
   </div>
+</div>
+<div id="start">
+  <h1>FILM CAM</h1>
+  <h2>PILIH MODE</h2>
+  <div class="modes">
+    <button class="mc on" id="mDigi" data-app="digicam"><b>Digicam</b><span>Simulasi film, efek &amp; setelan lengkap</span></button>
+    <button class="mc" id="mKam" data-app="kamera"><b>Kamera</b><span>Biasa, hasil langsung dikompres jadi &le;100 KB</span></button>
+  </div>
+  <h2>RASIO GAMBAR</h2>
+  <div class="seg wrap rs" id="startRat"></div>
+  <button class="btn" id="go" style="min-width:200px;margin-top:6px">Mulai</button>
 </div>
 <div class="ov" id="ov">
   <div class="gtop"><span id="gcount"></span><button class="btn ghost sm" id="close">Tutup</button></div>
@@ -189,6 +214,10 @@ const SIMS=[{"n":"Provia","d":"Standard","con":1.0,"ks":0.16,"kh":0.14,"bri":0.0
 {"n":"Mono + Ye","d":"Mono yellow filter","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.01,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0.012,"hal":0,"vig":0.02,"mono":1,"mw":[0.5,0.45,0.05],"tone":[1,1,1]},
 {"n":"Mono + R","d":"Mono red filter","con":1.0,"ks":0.2,"kh":0.15,"bri":0.0,"lift":0.01,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0.012,"hal":0,"vig":0.02,"mono":1,"mw":[0.8,0.2,0],"tone":[1,1,1]},
 {"n":"Mono + G","d":"Mono green filter","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.01,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0.012,"hal":0,"vig":0.02,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
+/* film netral untuk mode Kamera biasa */
+const NEUT={"n":"Normal","con":1,"ks":0,"kh":0,"bri":0,"lift":0,"roll":0,"sat":1,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0,"hal":0,"vig":0,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]};
+let app="digicam";
+const MAXB=100000;
 
 const $=id=>document.getElementById(id);
 const cv=$("cv"),gl=cv.getContext("webgl",{preserveDrawingBuffer:true});
@@ -302,6 +331,8 @@ const U=n=>gl.getUniformLocation(pg,n);
 
 const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,gridc:0,gridp:false,lleak:0,llc:0,ext:0,hlx:0,exp:0,nr:0,drp:0,mgc:0,xf:0,histo:1,af:0,pc:3,bk:0,b1:0,b2:1,b3:3,date:false,frame:false};
 const U_DEF=JSON.stringify(U_);
+/* pengaturan netral untuk mode Kamera (hanya EV yang ikut) */
+const U_N=Object.assign(JSON.parse(U_DEF),{shp:-4,xf:0,af:0,gridp:false,date:false,frame:false,bk:0});
 let LLP=[.02,.2];const rollLeak=()=>{LLP=[Math.random()<.5?.02:.98,.1+Math.random()*.6]};rollLeak();
 let cur=0,facing="environment",stream=null,src=null,still=false;
 let zoom=1,zmax=5,hw=false,zMin=1,zMaxHw=1,vtrack=null;
@@ -316,7 +347,7 @@ function size(w,h){
  const W=Math.round(cw*k),H=Math.round(ch*k);
  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;gl.viewport(0,0,W,H)}}
 function frame(t){
- const s=SIMS[cur];
+ const kam=app==="kamera",s=kam?NEUT:SIMS[cur];
  if(src){
   const w=src.videoWidth||src.naturalWidth||src.width,h=src.videoHeight||src.naturalHeight||src.height;
   if(w&&(src!==video||video.readyState>=2)){
@@ -325,7 +356,7 @@ function frame(t){
    const dz=hw?1:zoom;gl.uniform2fv(U("crop"),[crop[0]/dz,crop[1]/dz]);gl.uniform1f(U("m"),(!still&&facing==="user")?1:0);
    gl.uniform1f(U("time"),still?1:(t%1000)/10);gl.uniform2f(U("res"),cv.width,cv.height);
    if(!SAFE){
-    const u=U_;
+    const u=kam?Object.assign({},U_N,{ev:U_.ev}):U_;
     gl.uniform1f(U("con"),s.con);gl.uniform1f(U("bri"),s.bri);gl.uniform1f(U("lift"),s.lift+u.exp*.025+[0,.004,.01,.006][u.drp]);
     gl.uniform1f(U("roll"),s.roll+[0,.3,.6][u.dr]+[0,.12,.25,.15][u.drp]);
     gl.uniform1f(U("sat"),s.sat*(1+u.col*.1)*(1-u.exp*.1));gl.uniform1f(U("llK"),u.lleak*.3);gl.uniform1f(U("xf"),u.xf);gl.uniform3fv(U("llC"),[[1,.2,.1],[1,.72,.15],[1,.38,.12]][u.llc]);gl.uniform2fv(U("llP"),LLP);gl.uniform3fv(U("exT"),u.exp?[[1,1,1],[.92,1.05,.93],[1.06,.95,.94]][u.ext]:[1,1,1]);gl.uniform1f(U("nrK"),Math.max(0,u.nr)*.12);
@@ -375,7 +406,8 @@ let ri=0;function upd(){$("simName").textContent=SIMS[cur].n;$("ratName").textCo
 function pick(i){cur=i;upd()}
 const RATS=[["Asli",null],["3:2",[3,2]],["2:3",[2,3]],["1:1",[1,1]],["4:3",[4,3]],["3:4",[3,4]],["16:9",[16,9]],["9:16",[9,16]],["5:4",[5,4]],["4:5",[4,5]],["7:6",[7,6]],["65:24",[65,24]]];
 RATS.forEach((r,i)=>{const o=document.createElement("option");o.value=i;o.textContent=r[0];$("ratSel").appendChild(o)});
-$("ratSel").onchange=e=>{ri=+e.target.value;ratio=RATS[ri][1];upd()};
+function setRat(i){ri=i;ratio=RATS[i][1];$("ratSel").value=i;upd();[...$("startRat").children].forEach((b,j)=>b.classList.toggle("on",j===i))}
+$("ratSel").onchange=e=>setRat(+e.target.value);
 
 const photos=[];
 function setZoom(z){
@@ -432,19 +464,42 @@ function compose(c){
   g.fillText("'"+String(d.getFullYear()).slice(2)+" "+(d.getMonth()+1)+" "+d.getDate(),m+W-z*.8,m+H-z*.8);g.shadowBlur=0}
  if(U_.frame){g.fillStyle="#555";g.textAlign="center";g.font="italic "+Math.round(bt*.28)+"px 'Bradley Hand','Segoe Script','Comic Sans MS',cursive";g.fillText(SIMS[cur].n,o.width/2,m+H+bt*.62)}
  return o.toDataURL("image/jpeg",.95)}
+
+/* kompres JPEG sampai <= 100 KB: cari kualitas terbaik, kalau masih besar perkecil resolusi */
+async function fit100(c){
+ let sc=1,last=null;
+ for(let k=0;k<10;k++){
+  const w=Math.max(16,Math.round(c.width*sc)),h=Math.max(16,Math.round(c.height*sc));
+  const o=document.createElement("canvas");o.width=w;o.height=h;
+  const g=o.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(c,0,0,w,h);
+  const tb=q=>new Promise(r=>o.toBlob(r,"image/jpeg",q));
+  let b=await tb(.92);if(b&&b.size<=MAXB)return b;
+  let lo=.25,hi=.92;b=await tb(lo);last=b||last;
+  if(!b||b.size>MAXB){sc*=.8;continue}
+  let best=b;
+  for(let i=0;i<6;i++){const m=(lo+hi)/2,t=await tb(m);if(t&&t.size<=MAXB){best=t;lo=m}else hi=m}
+  return best}
+ return last}
+async function to100(c){
+ const b=await fit100(c);
+ const u=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)});
+ return{u,kb:Math.round(b.size/1024)}}
+
 async function takePhoto(){
  rollLeak();
+ const kam=app==="kamera";
  const f=$("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),60);
  let bmp=null;
  if(!still&&window.ImageCapture&&vtrack){
   try{const blob=await new ImageCapture(vtrack).takePhoto();bmp=await createImageBitmap(blob,{imageOrientation:"from-image"})}catch(e){bmp=null}
  }
- const prev=src,orig=cur,list=U_.bk?[U_.b1,U_.b2,U_.b3]:[cur];
+ const prev=src,orig=cur,list=kam?[cur]:(U_.bk?[U_.b1,U_.b2,U_.b3]:[cur]);
  if(bmp)src=bmp;
  for(const idx of list){
-  cur=idx;let url;
-  try{CAP=4096;frame(performance.now());url=compose(cv)}catch(e){continue}
-  addEntry({type:"photo",url,cap:SIMS[idx].n+" \u00b7 "+dateStr(),name:"film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg"});
+  cur=idx;let url,kb=0;
+  try{CAP=kam?1920:4096;frame(performance.now());
+   if(kam){const r=await to100(cv);url=r.u;kb=r.kb}else url=compose(cv)}catch(e){continue}
+  addEntry({type:"photo",url,cap:kam?(kb+" KB \u00b7 "+dateStr()):(SIMS[idx].n+" \u00b7 "+dateStr()),name:kam?("kamera-100kb-"+Date.now()+".jpg"):("film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg")});
   await new Promise(r=>setTimeout(r,30));
  }
  cur=orig;CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
@@ -515,6 +570,11 @@ function hudUpd(){
  const sim=SIMS[cur],e=$("evs");
  if(!evBuilt){for(let i=0;i<19;i++){const t=document.createElement("i");if(i%3===0)t.className="l";e.appendChild(t)}const b=document.createElement("b");b.id="evptr";e.appendChild(b);evBuilt=true}
  $("evptr").style.left=((U_.ev+3)/6*100)+"%";
+ if(app==="kamera"){
+  $("info").textContent="KAMERA  "+RATS[ri][0];
+  $("simLabel").textContent="MAX 100KB"+(U_.ev?" EV"+fmt(U_.ev):"");
+  $("grid").className="grid";$("hist").style.display=U_.histo?"block":"none";
+  return}
  $("info").textContent=(FULL[sim.n]||sim.n.toUpperCase())+"  "+RATS[ri][0];
  $("simLabel").textContent="DR"+[100,200,400][U_.dr]+" WB"+fmt(U_.wb)+(U_.ev?" EV"+fmt(U_.ev):"")+["",""," GRAIN OFF"," GRAIN WEAK"," GRAIN STRONG"][U_.grain+(U_.grain?1:0)]+(U_.af?" "+AFN[U_.af].toUpperCase():"")+(U_.bk?" BKT":"");
  $("grid").className="grid"+(U_.grid?" on":"");
@@ -551,7 +611,7 @@ function histo(t){
   for(let i=0;i<d.length;i+=4)b[((d[i]*.299+d[i+1]*.587+d[i+2]*.114)|0)>>3]++;
   const m=Math.max(...b),W=84,H=36;hx.clearRect(0,0,W,H);hx.fillStyle="#9be5b0cc";
   b.forEach((v,i)=>{const h=Math.sqrt(v/m)*(H-4);hx.fillRect(2+i*2.5,H-2-h,2,h)})}catch(e){}}
-function dstUpd(){const e=$("dst"),d=new Date();e.textContent="'"+String(d.getFullYear()).slice(2)+" "+(d.getMonth()+1)+" "+d.getDate();e.style.display=U_.date?"block":"none"}
+function dstUpd(){const e=$("dst"),d=new Date();e.textContent="'"+String(d.getFullYear()).slice(2)+" "+(d.getMonth()+1)+" "+d.getDate();e.style.display=(U_.date&&app!=="kamera")?"block":"none"}
 $("setBtn").onclick=()=>{if(recorder||counting)return;buildSheet();$("sheet").classList.add("show")};
 $("setClose").onclick=()=>$("sheet").classList.remove("show");
 $("setReset").onclick=()=>{Object.assign(U_,JSON.parse(U_DEF));buildSheet();dstUpd();hudUpd()};
@@ -592,8 +652,24 @@ $("flip").onclick=async()=>{if(recorder)return;facing=facing==="user"?"environme
 $("pick").onclick=()=>$("file").click();
 $("file").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
  const im=new Image();im.onload=()=>{src=im;still=true;hw=false;zmax=5;$("zoom").max=5;setZoom(1);$("msg").classList.remove("show")};im.src=URL.createObjectURL(f)};
-pick(0);hudUpd();
-startCam();
+
+/* layar awal: pilih Digicam / Kamera 100KB + rasio */
+let pendingApp="digicam",started=false;
+RATS.forEach((r,i)=>{const b=document.createElement("button");b.textContent=r[0];b.onclick=()=>setRat(i);$("startRat").appendChild(b)});
+document.querySelectorAll(".mc").forEach(b=>b.onclick=()=>{pendingApp=b.dataset.app;document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x===b))});
+function applyApp(){
+ app=pendingApp;const kam=app==="kamera";
+ $("app").classList.toggle("kam",kam);
+ $("badge").innerHTML=kam?"KAMERA<small>MAX 100 KB</small>":"FILM CAM<small>FILM SIMULATION</small>";
+ if(kam){mode="foto";$("modeBtn").textContent="FOTO";$("snap").classList.remove("vid")}
+ dstUpd();upd()}
+$("go").onclick=()=>{
+ applyApp();$("start").classList.add("hide");
+ if(!started){started=true;startCam()}};
+$("menuBtn").onclick=()=>{if(recorder||counting)return;pendingApp=app;
+ document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x.dataset.app===app));
+ $("sheet").classList.remove("show");$("start").classList.remove("hide")};
+pick(0);setRat(0);hudUpd();
 </script>
 </body>
 </html>
