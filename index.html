@@ -328,7 +328,7 @@ const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
 [[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR]].forEach(a=>gl.texParameteri(gl.TEXTURE_2D,a[0],a[1]));
 const U=n=>gl.getUniformLocation(pg,n);
 
-const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,gridc:0,gridp:false,lleak:0,llc:0,ext:0,hlx:0,exp:0,nr:0,drp:0,mgc:0,xf:0,histo:1,af:0,pc:3,bk:0,b1:1,b2:2,b3:4,date:false,frame:false};
+const U_={grain:0,gsize:0,cce:0,fxb:0,skin:0,dr:0,hl:0,sh:0,col:0,shp:0,clr:0,wb:0,mwc:0,ev:0,grid:0,gridc:0,gridp:false,lleak:0,llc:0,ext:0,hlx:0,exp:0,nr:0,drp:0,mgc:0,xf:0,histo:1,af:0,pc:3,bk:0,b1:1,b2:2,b3:4,date:false,frame:false,k100:false};
 const U_DEF=JSON.stringify(U_);
 /* pengaturan netral untuk mode Kamera (hanya EV yang ikut) */
 const U_N=Object.assign(JSON.parse(U_DEF),{shp:-4,xf:0,af:0,gridp:false,date:false,frame:false,bk:0});
@@ -450,8 +450,8 @@ function countdown(sec,done){
  step()}
 function cancelCount(){clearTimeout(counting);counting=null;$("count").classList.remove("show")}
 
-function compose(c){
- if(!U_.date&&!U_.frame&&!(U_.gridp&&U_.grid))return c.toDataURL("image/jpeg",.95);
+function compose(c,raw){
+ if(!U_.date&&!U_.frame&&!(U_.gridp&&U_.grid))return raw?c:c.toDataURL("image/jpeg",.95);
  const W=c.width,H=c.height,mn=Math.min(W,H),m=U_.frame?Math.round(mn*.045):0,bt=U_.frame?Math.round(mn*.16):0;
  const o=document.createElement("canvas");o.width=W+m*2;o.height=H+m+bt;
  const g=o.getContext("2d");
@@ -462,7 +462,7 @@ function compose(c){
   g.font="700 "+z+"px 'Courier New',monospace";g.textAlign="right";g.fillStyle="#ff9a1f";g.shadowColor="#ff6a00";g.shadowBlur=z*.5;
   g.fillText("'"+String(d.getFullYear()).slice(2)+" "+(d.getMonth()+1)+" "+d.getDate(),m+W-z*.8,m+H-z*.8);g.shadowBlur=0}
  if(U_.frame){g.fillStyle="#555";g.textAlign="center";g.font="italic "+Math.round(bt*.28)+"px 'Bradley Hand','Segoe Script','Comic Sans MS',cursive";g.fillText(SIMS[cur].n,o.width/2,m+H+bt*.62)}
- return o.toDataURL("image/jpeg",.95)}
+ return raw?o:o.toDataURL("image/jpeg",.95)}
 
 /* kompres JPEG sampai <= 100 KB: cari kualitas terbaik, kalau masih besar perkecil resolusi */
 async function fit100(c){
@@ -497,8 +497,8 @@ async function takePhoto(){
  for(const idx of list){
   cur=idx;let url,kb=0;
   try{CAP=kam?1920:4096;frame(performance.now());
-   if(kam){const r=await to100(cv);url=r.u;kb=r.kb}else if(pol)url=cv.toDataURL("image/jpeg",.95);else url=compose(cv)}catch(e){continue}
-  addEntry({type:"photo",url,cap:kam?(kb+" KB \u00b7 "+dateStr()):pol?("Tanpa filter \u00b7 "+dateStr()):(SIMS[idx].n+" \u00b7 "+dateStr()),name:kam?("kamera-100kb-"+Date.now()+".jpg"):pol?("polos-"+Date.now()+".jpg"):("film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg")});
+   if(kam){const r=await to100(cv);url=r.u;kb=r.kb}else if(pol)url=cv.toDataURL("image/jpeg",.95);else if(U_.k100){const r=await to100(compose(cv,true));url=r.u;kb=r.kb}else url=compose(cv)}catch(e){continue}
+  addEntry({type:"photo",url,cap:kam?(kb+" KB \u00b7 "+dateStr()):pol?("Tanpa filter \u00b7 "+dateStr()):(SIMS[idx].n+(kb?" \u00b7 "+kb+" KB":"")+" \u00b7 "+dateStr()),name:kam?("kamera-100kb-"+Date.now()+".jpg"):pol?("polos-"+Date.now()+".jpg"):("film-"+SIMS[idx].n.replace(/\W+/g,"")+"-"+Date.now()+"-"+idx+".jpg")});
   await new Promise(r=>setTimeout(r,30));
  }
  cur=orig;CAP=1440;src=prev;if(bmp&&bmp.close)bmp.close();
@@ -543,7 +543,7 @@ $("snap").onclick=()=>{
 const AFN=["Off","Toy Camera","Miniature","Pop Color","High Key","Low Key","Dynamic Tone","Soft Focus","Partial Color","Cross Screen"];
 const SEG=[["grain","Grain Effect",["Auto","Off","Lemah","Kuat"]],["gsize","Ukuran butiran",["Kecil","Besar"]],["cce","Color Chrome Effect",["Auto","Off","Lemah","Kuat"]],["fxb","Color Chrome FX Blue",["Off","Lemah","Kuat"]],["skin","Smooth Skin Effect",["Off","Lemah","Kuat"]],["dr","Dynamic Range",["DR100","DR200","DR400"]],["grid","Garis bantu (Grid)",["Off","9 Grid 3\u00d73","4\u00d74","24 Grid 6\u00d74","HD Framing 16:9","Golden Ratio","Diagonal","Silang tengah"],true],["gridc","Warna grid",["Putih","Kuning","Hijau","Merah"]],["lleak","Light Leak (X Half)",["Off","Lemah","Kuat"]],["llc","Warna Light Leak",["Merah","Kuning","Campur"]],["hlx","Halation (X Half)",["Off","Lemah","Kuat"]],["exp","Expired Film (X Half)",["Off","Lemah","Kuat"]],["ext","Warna Expired Film",["Netral","Hijau","Merah"]],["xf","Filter X Half",["Off","Retro","Vignette","Blur","Fish Eye","Color Shift","Mirror","Double Ex.","Canvas"],true],["drp","D Range Priority",["Off","Lemah","Kuat","Auto"]],["histo","Histogram",["Off","On"]],["af","Advanced Filter",AFN,true],["pc","Partial Color: warna yang dipertahankan",["Merah","Oranye","Kuning","Hijau","Biru","Ungu"],true],["bk","Film Bracketing (3 film sekali jepret)",["Off","On"]]];
 const SLD=[["ev","Exposure Compensation (EV)",-3,3,1/3],["hl","Highlight Tone",-2,4,.5],["sh","Shadow Tone",-2,4,.5],["col","Color",-4,4,1],["shp","Sharpness",-4,4,1],["clr","Clarity",-5,5,1],["wb","White Balance Shift (dingin \u2194 hangat)",-9,9,1],["mwc","Warna Monokrom (hanya film B/W)",-18,18,2],["mgc","Monokrom hijau \u2194 magenta (hanya B/W)",-18,18,2],["nr","Noise Reduction",-4,4,1]];
-const TOG=[["gridp","Cetak grid ke dalam foto"],["date","Date stamp di foto"],["frame","Bingkai Instax di foto"]];
+const TOG=[["k100","Kompres foto jadi ≤100 KB"],["gridp","Cetak grid ke dalam foto"],["date","Date stamp di foto"],["frame","Bingkai Instax di foto"]];
 const fmt=v=>(v>0?"+":"")+(Number.isInteger(v)?v:(+v).toFixed(1));
 function buildSheet(){const b=$("shb");b.innerHTML="";
  SEG.forEach(([k,t,o,w])=>{const d=document.createElement("div");d.className="ctl";d.innerHTML="<label>"+t+"</label>";
@@ -575,7 +575,7 @@ function hudUpd(){
   $("grid").className="grid";$("hist").style.display=U_.histo?"block":"none";
   return}
  $("info").textContent=(FULL[sim.n]||sim.n.toUpperCase())+"  "+RATS[ri][0];
- $("simLabel").textContent="DR"+[100,200,400][U_.dr]+" WB"+fmt(U_.wb)+(U_.ev?" EV"+fmt(U_.ev):"")+["",""," GRAIN OFF"," GRAIN WEAK"," GRAIN STRONG"][U_.grain+(U_.grain?1:0)]+(U_.af?" "+AFN[U_.af].toUpperCase():"")+(U_.bk?" BKT":"");
+ $("simLabel").textContent=(U_.k100?"100KB ":"")+"DR"+[100,200,400][U_.dr]+" WB"+fmt(U_.wb)+(U_.ev?" EV"+fmt(U_.ev):"")+["",""," GRAIN OFF"," GRAIN WEAK"," GRAIN STRONG"][U_.grain+(U_.grain?1:0)]+(U_.af?" "+AFN[U_.af].toUpperCase():"")+(U_.bk?" BKT":"");
  $("grid").className="grid"+(U_.grid?" on":"");
  $("hist").style.display=U_.histo?"block":"none";
  syncGrid();
