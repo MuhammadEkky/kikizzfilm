@@ -215,6 +215,21 @@ const SIMS=[{"n":"Provia","d":"Standard","con":1.0,"ks":0.16,"kh":0.14,"bri":0.0
 {"n":"Mono + G","d":"Mono green filter","con":1.0,"ks":0.15,"kh":0.12,"bri":0.0,"lift":0.01,"roll":0.0,"sat":1.0,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0.012,"hal":0,"vig":0.02,"mono":1,"mw":[0.2,0.7,0.1],"tone":[1,1,1]}];
 /* film netral untuk mode Kamera biasa */
 const NEUT={"n":"Normal","con":1,"ks":0,"kh":0,"bri":0,"lift":0,"roll":0,"sat":1,"bs":[1,1,1,1,1,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0,0,0],"cc":0,"gr":0,"hal":0,"vig":0,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]};
+SIMS.push(
+{"n":"Digicam Biru","d":"Digicam biru flash","con":1.12,"ks":0.22,"kh":0.38,"bri":0.0,"lift":0.035,"roll":0.04,"sat":0.95,"bs":[0.92,0.9,0.85,1.2,1.35,0.95],"bh":[0,0,-4,-6,-4,0],"bl":[1,1,0.95,1,1,1],"sh":[-0.035,0.015,0.1],"hi":[-0.025,0.005,0.06],"cc":0.1,"gr":0.04,"hal":0.06,"vig":0.12,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
+{"n":"Digicam Biru Soft","d":"Digicam biru pudar","con":0.98,"ks":0.08,"kh":0.2,"bri":0.0,"lift":0.06,"roll":0.15,"sat":0.85,"bs":[0.85,0.85,0.8,1.15,1.25,0.9],"bh":[0,0,-4,-6,-4,0],"bl":[1,1,0.95,1,1,1],"sh":[-0.025,0.02,0.09],"hi":[-0.015,0.01,0.05],"cc":0.06,"gr":0.05,"hal":0.07,"vig":0.1,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]});
+const P=(n,d,o)=>Object.assign({},NEUT,{n,d},o);
+SIMS.push(
+P("Digicam Flash","Flash keras",{con:1.18,ks:.3,kh:.45,lift:.02,roll:.02,sat:1.05,bs:[1.05,1,.9,1,1.05,1],sh:[0,0,.02],hi:[.03,.02,.01],cc:.12,gr:.045,hal:.08,vig:.15}),
+P("CCD Y2K","Teal pink 2000an",{con:1.1,ks:.2,kh:.3,lift:.03,sat:1.1,bs:[1.1,1.1,.85,1.2,1.2,1.2],sh:[-.01,.03,.05],hi:[.03,.015,-.01],cc:.08,gr:.04,hal:.07,vig:.1}),
+P("Pink Dreamy","Pink lembut",{con:.95,kh:.1,lift:.05,roll:.25,sat:1,bs:[1.1,.95,.8,.9,.95,1.35],sh:[.03,0,.02],hi:[.05,.02,.03],gr:.03,hal:.08,vig:.06}),
+P("Disposable Kuning","Kamera sekali pakai",{con:1.1,ks:.2,kh:.3,lift:.02,sat:1.05,bs:[1.1,1.2,1,.8,.8,1],sh:[0,.01,-.02],hi:[.07,.05,-.03],cc:.08,gr:.06,hal:.05,vig:.18}),
+P("Golden Hour","Hangat senja",{con:1.05,kh:.2,roll:.15,sat:1.1,sh:[.015,.005,-.01],hi:[.08,.045,-.03],gr:.025,hal:.06,vig:.12}),
+P("Indie Fade","Pudar kalem",{con:.9,lift:.09,roll:.3,sat:.8,sh:[.01,.02,.04],hi:[.02,.02,.01],gr:.05,vig:.05}),
+P("Hijau Film","Hijau sinematik",{con:1.08,ks:.15,lift:.03,sat:1,bs:[.9,1,1.2,1.1,.9,.9],sh:[-.02,.04,0],hi:[0,.03,0],cc:.08,gr:.05,vig:.12}),
+P("Moody Dingin","Gelap biru",{con:1.2,ks:.35,kh:.1,sat:.8,sh:[-.02,.01,.06],hi:[-.01,0,.03],gr:.035,vig:.25}),
+P("Polaroid","Instan pudar",{con:.95,lift:.06,roll:.2,sat:.9,sh:[0,.02,.02],hi:[.04,.03,0],gr:.04,hal:.04,vig:.15}),
+P("Retro Merah","Merah vintage",{con:1.15,ks:.2,sat:1,bs:[1.3,1,.8,.8,.8,1.2],sh:[.02,-.01,0],hi:[.06,0,-.02],gr:.05,vig:.15}));
 SIMS.unshift(Object.assign({},NEUT,{n:"Tanpa Filter",d:"Polos"}));
 let app="digicam";
 const MAXB=90000;
