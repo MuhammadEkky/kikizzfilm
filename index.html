@@ -39,6 +39,16 @@ background:linear-gradient(180deg,#e4e4df 0%,#b4b4ae 40%,#d3d3cd 52%,#8f8f8a 100
 canvas{max-width:100%;max-height:100%;display:block}
 .corner{display:none}
 .dial select{pointer-events:none}
+#fsheet{height:62vh}
+.ftabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin-bottom:6px;position:sticky;top:0;background:#1b1c19;z-index:1;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.ftabs::-webkit-scrollbar{display:none}
+.ftabs button{flex:0 0 auto;padding:8px 14px;background:#10110f;color:var(--dim);border:1px solid #333;border-radius:18px;font:600 14px inherit;font-family:inherit;white-space:nowrap}
+.ftabs button.on{background:var(--fuji);color:#06130b;border-color:var(--fuji)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fgrid button{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;background:#10110f;color:var(--ink);border:1px solid #333;border-radius:10px;font-family:inherit}
+.fgrid button b{font-size:15px}
+.fgrid button span{font-size:12px;color:var(--dim)}
+.fgrid button.on{background:#233a2c;border-color:var(--fuji)}
 .d1{cursor:pointer}
 .pola{background:none!important;padding:0!important;box-shadow:none!important;transform:none!important;border-radius:0!important}
 .c1{left:12px;top:12px;border-right:0;border-bottom:0}.c2{right:12px;top:12px;border-left:0;border-bottom:0}
@@ -742,15 +752,17 @@ const CATS=[["Semua",null],
 let catI=0;
 function buildF(){
  const b=$("fsb");b.innerHTML="";
- const t=document.createElement("div");t.className="seg wrap";t.style.marginBottom="10px";
- CATS.forEach((c,i)=>{const x=document.createElement("button");x.textContent=c[0];x.classList.toggle("on",i===catI);x.onclick=()=>{catI=i;buildF()};t.appendChild(x)});
+ const t=document.createElement("div");t.className="ftabs";
+ CATS.forEach((c,i)=>{const n=c[1]?SIMS.filter(s=>c[1].includes(s.n)).length:SIMS.length;if(!n)return;
+  const x=document.createElement("button");x.textContent=c[0]+" "+n;x.classList.toggle("on",i===catI);x.onclick=()=>{catI=i;buildF()};t.appendChild(x)});
  b.appendChild(t);
- const g=document.createElement("div");g.className="seg wrap";
+ const g=document.createElement("div");g.className="fgrid";
  SIMS.forEach((s,i)=>{if(CATS[catI][1]&&!CATS[catI][1].includes(s.n))return;
-  const x=document.createElement("button");x.textContent=s.n;x.classList.toggle("on",i===cur);
+  const x=document.createElement("button");x.innerHTML="<b></b><span></span>";x.firstChild.textContent=s.n;x.lastChild.textContent=s.d||"";x.classList.toggle("on",i===cur);
   x.onclick=()=>{pick(i);[...g.children].forEach(y=>y.classList.toggle("on",y===x))};g.appendChild(x)});
- b.appendChild(g)}
-document.querySelector(".d1").onclick=()=>{if(recorder||counting||app!=="digicam")return;$("sheet").classList.remove("show");buildF();$("fsheet").classList.add("show")};
+ b.appendChild(g);
+ const on=g.querySelector(".on");if(on)on.scrollIntoView({block:"nearest"})}
+document.querySelector(".d1").onclick=()=>{if(recorder||counting||app!=="digicam")return;$("sheet").classList.remove("show");catI=Math.max(1,CATS.findIndex((c,i)=>i>0&&c[1]&&c[1].includes(SIMS[cur].n)));buildF();$("fsheet").classList.add("show")};
 $("fClose").onclick=()=>$("fsheet").classList.remove("show");
 let sx=null,sy=0;
 vf.addEventListener("touchstart",e=>{sx=(e.touches.length===1&&!e.target.closest("input,button,.zoom,.ev,.tools"))?e.touches[0].clientX:null;sy=e.touches[0].clientY},{passive:true});
