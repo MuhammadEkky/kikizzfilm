@@ -256,8 +256,30 @@ P("Pastel","Pastel lembut",{con:.88,lift:.07,roll:.3,sat:.85,bs:[1,1,1,1,1,1.1],
 P("Sunset Orange","Jingga senja",{con:1.1,sat:1.15,bs:[1.3,1.3,.8,.8,.8,1.1],sh:[.03,-.01,-.01],hi:[.09,.04,-.05],vig:.15}),
 P("Forest Moody","Hijau gelap",{con:1.15,sat:.9,bs:[.8,.9,1.3,1.1,.9,.8],sh:[-.02,.03,.01],hi:[.01,.03,0],gr:.04,vig:.22}),
 P("Es Biru Segar","Biru cerah",{con:1.05,kh:.15,sat:1.05,bs:[.9,.9,1,1.2,1.3,1],sh:[-.01,.01,.04],hi:[-.02,.01,.04],gr:.02}));
-SIMS.unshift(Object.assign({},NEUT,{n:"Tanpa Filter",d:"Polos"}));
-let app="digicam";
+SIMS.push(
+P("Portra 400 ala","Kulit hangat pastel",{con:.97,kh:.1,lift:.03,roll:.2,sat:.9,bs:[.95,1.05,.95,1,.95,.95],sh:[.01,.01,0],hi:[.03,.02,0],gr:.03,vig:.05}),
+P("Kodachrome ala","Merah klasik slide",{con:1.15,ks:.25,kh:.25,sat:1.2,bs:[1.4,1.2,.9,.8,.9,1],sh:[.01,0,-.01],hi:[.04,.02,-.02],gr:.04,vig:.1}),
+P("Ektar ala","Vivid halus",{con:1.12,kh:.3,sat:1.25,bs:[1.3,1.1,1.1,1,1.2,1],gr:.02,vig:.06}),
+P("Superia 800 ala","Hijau cyan berbutir",{con:1.1,sat:1,bs:[1,1,1.2,1.1,1.1,1],sh:[-.01,.03,.02],hi:[.03,0,-.01],gr:.07,vig:.1}),
+P("CineStill 800T ala","Tungsten + halo merah",{con:1.1,sat:1,sh:[-.03,.02,.08],hi:[.04,0,-.02],hal:.15,gr:.06,vig:.15}),
+P("Fuji 400H ala","Pastel hijau lembut",{con:.92,lift:.05,sat:.9,bs:[.95,.95,.85,1.1,1.1,.95],hi:[.02,.03,.03],gr:.03}),
+P("Tri-X ala","B/W butiran kasar",{con:1.3,ks:.3,kh:.3,mono:1,mw:[.35,.55,.1],gr:.09,vig:.12}),
+P("Warm Film","Hangat sinematik",{con:1.1,ks:.2,sat:.95,sh:[.01,0,-.01],hi:[.05,.03,-.02],gr:.05,vig:.12}),
+P("Vintage Slide","Slide jenuh",{con:1.18,ks:.3,kh:.3,sat:1.3,bs:[1.2,1.2,1,1,1.1,1.2],sh:[0,.01,.02],hi:[.03,.01,-.01],gr:.05,vig:.2}),
+P("Instax Bleed","Instan sorot meleleh",{con:.95,lift:.04,roll:.25,sat:1.1,hi:[.05,.02,.03],hal:.15,gr:.04,vig:.12}),
+P("Digicam Neon Hijau","Lampu neon hijau",{con:1.1,sat:.9,sh:[-.01,.04,0],hi:[0,.03,-.01],gr:.06,hal:.06,vig:.15}),
+P("Digicam Bar Kuning","Lampu bar kuning",{con:1.15,sat:1,sh:[.02,.01,-.02],hi:[.06,.05,-.04],gr:.07,vig:.2}),
+P("Digicam Washed","Hangat pudar",{con:.95,lift:.07,sat:.85,hi:[.05,.03,-.01],gr:.06,hal:.06,vig:.08}),
+P("Natural Light","Cahaya alami",{con:.95,lift:.02,sat:.95,hi:[.02,.02,.01],gr:.01,vig:.04}),
+P("Enchanted","Pastel biru pink",{con:.9,lift:.05,sat:.95,bs:[1.1,.9,.8,1.1,1.2,1.3],hi:[.03,.02,.04],hal:.1,gr:.02}),
+P("Dreamland","Sinematik lembut",{con:1.1,kh:.1,lift:.04,sat:.95,sh:[-.01,.01,.03],hi:[.03,.03,.04],hal:.1,vig:.15}),
+P("Warm & Moody","Emas cokelat",{con:1.15,sat:.9,bs:[1,1.1,.6,.8,.8,.9],sh:[.01,0,-.01],hi:[.06,.035,-.02],gr:.04,vig:.2}),
+P("Golden Boho","Emas hangat",{con:1,lift:.03,sat:.95,bs:[1.1,1.2,.9,.8,.8,.9],sh:[.02,.01,-.01],hi:[.07,.045,-.02],gr:.03,vig:.1}),
+P("True Color","Warna asli",{con:1.03,sat:1,vig:.02,gr:.01}),
+P("Clean Editorial","Bersih editorial",{con:1.08,ks:.2,kh:.15,sat:.95,vig:.03,gr:.01}),
+P("Colorful Clean","Warna cerah bersih",{con:1.1,sat:1.15,kh:.2,vig:.03,gr:.01}),
+P("Foodie","Makanan menggugah",{con:1.15,kh:.2,sat:1.2,bs:[1.2,1.25,1.2,1,1,1],gr:.015,vig:.05}));
+SIMS.unshift(Object.assign({},NEUT,{n:"Tanpa Filter",d:"Polos"}));let app="digicam";
 const MAXB=90000;
 
 const $=id=>document.getElementById(id);
@@ -709,11 +731,13 @@ $("menuBtn").onclick=()=>{if(recorder||counting)return;pendingApp=app;
  document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x.dataset.app===app));
  $("sheet").classList.remove("show");$("start").classList.remove("hide")};
 const CATS=[["Semua",null],
-["Digicam",["Tanpa Filter","Digicam Biru","Digicam Biru Soft","Digicam Flash","CCD Y2K","Disposable Kuning","Polaroid"]],
-["Potret",["Bright & Airy","Portrait Hangat","Wedding Soft","Pastel","Pink Dreamy","Fashion Editorial"]],
-["Sinematik",["Teal & Orange","Dark Moody","Matte Black","Cyberpunk","Neon Malam","Forest Moody","Hijau Film","Moody Dingin","Urban Grit"]],
-["Hangat & Warna",["Gold 200","Vintage 70an","Autumn","Sunset Orange","Golden Hour","Retro Merah","Indie Fade","Tropical","Es Biru Segar"]],
+["Digicam",["Tanpa Filter","Digicam Biru","Digicam Biru Soft","Digicam Flash","CCD Y2K","Disposable Kuning","Polaroid","Digicam Neon Hijau","Digicam Bar Kuning","Digicam Washed","Instax Bleed"]],
+["Potret",["Bright & Airy","Portrait Hangat","Wedding Soft","Pastel","Pink Dreamy","Fashion Editorial","Natural Light","Enchanted"]],
+["Sinematik",["Teal & Orange","Dark Moody","Matte Black","Cyberpunk","Neon Malam","Forest Moody","Hijau Film","Moody Dingin","Urban Grit","Dreamland","Warm & Moody"]],
+["Hangat & Warna",["Gold 200","Vintage 70an","Autumn","Sunset Orange","Golden Hour","Retro Merah","Indie Fade","Tropical","Es Biru Segar","Golden Boho"]],
 ["Hitam Putih",["Acros","Monochrome","Sepia","Acros + Ye","Acros + R","Acros + G","Mono + Ye","Mono + R","Mono + G","Noir Kontras","Street BW","BW Lembut","BW Hangat"]],
+["Film Stock",["Portra 400 ala","Kodachrome ala","Ektar ala","Superia 800 ala","CineStill 800T ala","Fuji 400H ala","Tri-X ala","Gold 200","Warm Film","Vintage Slide"]],
+["Bersih",["True Color","Clean Editorial","Colorful Clean","Foodie"]],
 ["Klasik",["Provia","Velvia","Astia","Classic Chrome","Classic Neg.","Eterna","Pro Neg. Hi","Pro Neg. Std","Nostalgic Neg.","Reala Ace","Eterna Bleach Bypass"]]];
 let catI=0;
 function buildF(){
