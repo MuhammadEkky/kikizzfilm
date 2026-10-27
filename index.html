@@ -38,6 +38,8 @@ background:linear-gradient(180deg,#e4e4df 0%,#b4b4ae 40%,#d3d3cd 52%,#8f8f8a 100
 .vf{position:relative;width:100%;height:100%;border-radius:7px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #000,0 0 18px #000 inset}
 canvas{max-width:100%;max-height:100%;display:block}
 .corner{display:none}
+.dial select{pointer-events:none}
+.d1{cursor:pointer}
 .pola{background:none!important;padding:0!important;box-shadow:none!important;transform:none!important;border-radius:0!important}
 .c1{left:12px;top:12px;border-right:0;border-bottom:0}.c2{right:12px;top:12px;border-left:0;border-bottom:0}
 .c3{left:12px;bottom:46px;border-right:0;border-top:0}.c4{right:12px;bottom:46px;border-left:0;border-top:0}
@@ -191,6 +193,7 @@ background:#0e0e0d radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.2px) 
   <div class="row"><button class="btn" id="share">Bagikan</button><button class="btn ghost" id="save">Unduh</button><button class="btn ghost" id="del">Hapus</button></div>
 </div>
 <div class="sheet" id="sheet"><div class="sh-h"><b>Setelan film</b><span><button class="sbtn" id="setReset">Reset</button><button class="sbtn on" id="setClose">Selesai</button></span></div><div class="sh-b" id="shb"></div></div>
+<div class="sheet" id="fsheet"><div class="sh-h"><b>Pilih filter</b><span><button class="sbtn on" id="fClose">Selesai</button></span></div><div class="sh-b" id="fsb"></div></div>
 <input type="file" id="file" accept="image/*" hidden>
 <script>
 const SIMS=[{"n":"Provia","d":"Standard","con":1.0,"ks":0.16,"kh":0.14,"bri":0.0,"lift":0.0,"roll":0.08,"sat":1.03,"bs":[1.03,1,1.03,1,1.05,1],"bh":[0,0,0,0,0,0],"bl":[1,1,1,1,1,1],"sh":[0,0,0],"hi":[0.008,0.004,0],"cc":0.06,"gr":0.012,"hal":0.03,"vig":0.02,"mono":0,"mw":[0.299,0.587,0.114],"tone":[1,1,1]},
@@ -230,6 +233,29 @@ P("Hijau Film","Hijau sinematik",{con:1.08,ks:.15,lift:.03,sat:1,bs:[.9,1,1.2,1.
 P("Moody Dingin","Gelap biru",{con:1.2,ks:.35,kh:.1,sat:.8,sh:[-.02,.01,.06],hi:[-.01,0,.03],gr:.035,vig:.25}),
 P("Polaroid","Instan pudar",{con:.95,lift:.06,roll:.2,sat:.9,sh:[0,.02,.02],hi:[.04,.03,0],gr:.04,hal:.04,vig:.15}),
 P("Retro Merah","Merah vintage",{con:1.15,ks:.2,sat:1,bs:[1.3,1,.8,.8,.8,1.2],sh:[.02,-.01,0],hi:[.06,0,-.02],gr:.05,vig:.15}));
+SIMS.push(
+P("Bright & Airy","Terang lembut",{con:.92,kh:.05,lift:.05,roll:.3,sat:.9,sh:[.01,.01,.01],hi:[.03,.03,.03],gr:.02}),
+P("Portrait Hangat","Kulit hangat",{con:1.05,kh:.15,roll:.15,sat:.95,bs:[.9,.95,1,1,1,.9],sh:[.01,0,-.01],hi:[.04,.025,0],skinHint:1,gr:.03,vig:.06}),
+P("Teal & Orange","Sinematik",{con:1.15,ks:.25,sat:1.1,bs:[1.1,1.1,.9,1.1,1.1,1],sh:[-.03,.03,.06],hi:[.07,.03,-.04],gr:.03,vig:.15}),
+P("Dark Moody","Gelap dramatis",{con:1.25,ks:.4,kh:.1,sat:.75,sh:[-.01,0,.02],hi:[.02,.01,0],gr:.04,vig:.3}),
+P("Matte Black","Hitam matte",{con:1.05,lift:.1,roll:.1,sat:.9,gr:.03,vig:.08}),
+P("Cyberpunk","Neon ungu biru",{con:1.2,sat:1.3,bs:[1.2,.9,.9,1.3,1.3,1.4],sh:[.03,-.02,.08],hi:[.05,0,.06],hal:.1,gr:.03,vig:.2}),
+P("Autumn","Musim gugur",{con:1.08,sat:1.05,bs:[1.2,1.3,.7,.8,.8,1],sh:[.02,0,-.01],hi:[.06,.03,-.03],gr:.03,vig:.1}),
+P("Tropical","Segar tropis",{con:1.1,sat:1.15,bs:[1,1.1,1.35,1.3,1.2,.9],hi:[.02,.03,.02],gr:.02}),
+P("Vintage 70an","Retro pudar",{con:.95,lift:.04,roll:.2,sat:.85,bs:[1.1,1.15,.8,.7,.7,1],sh:[.02,.01,-.02],hi:[.06,.04,-.03],gr:.07,vig:.2}),
+P("Noir Kontras","B/W gelap",{con:1.35,ks:.45,kh:.35,mono:1,mw:[.3,.6,.1],gr:.06,vig:.25}),
+P("Street BW","B/W jalanan",{con:1.25,ks:.35,kh:.25,mono:1,mw:[.4,.5,.1],gr:.07,vig:.12}),
+P("BW Lembut","B/W kalem",{con:.95,lift:.04,roll:.2,mono:1,gr:.03}),
+P("BW Hangat","B/W tinta hangat",{con:1.1,mono:1,tone:[1.06,1,.9],gr:.04,vig:.1}),
+P("Fashion Editorial","Majalah",{con:1.12,ks:.25,kh:.3,sat:.85,bs:[1,.9,.8,.9,.9,1],hi:[.02,.02,.02],gr:.02,vig:.08}),
+P("Wedding Soft","Pernikahan lembut",{con:.9,kh:.05,lift:.05,roll:.35,sat:.92,sh:[.01,.005,0],hi:[.04,.035,.02],hal:.1,gr:.02}),
+P("Gold 200","Hangat klasik",{con:1.08,sat:1.1,bs:[1.1,1.2,1,.8,.85,1],sh:[.01,0,-.015],hi:[.07,.045,-.025],gr:.06,vig:.1}),
+P("Neon Malam","Lampu malam",{con:1.2,sat:1.1,sh:[-.02,.01,.07],hi:[.06,.02,-.03],hal:.12,gr:.05,vig:.2}),
+P("Urban Grit","Kota kasar",{con:1.3,ks:.4,kh:.3,sat:.65,sh:[0,.01,.02],gr:.08,vig:.18}),
+P("Pastel","Pastel lembut",{con:.88,lift:.07,roll:.3,sat:.85,bs:[1,1,1,1,1,1.1],hi:[.03,.03,.04]}),
+P("Sunset Orange","Jingga senja",{con:1.1,sat:1.15,bs:[1.3,1.3,.8,.8,.8,1.1],sh:[.03,-.01,-.01],hi:[.09,.04,-.05],vig:.15}),
+P("Forest Moody","Hijau gelap",{con:1.15,sat:.9,bs:[.8,.9,1.3,1.1,.9,.8],sh:[-.02,.03,.01],hi:[.01,.03,0],gr:.04,vig:.22}),
+P("Es Biru Segar","Biru cerah",{con:1.05,kh:.15,sat:1.05,bs:[.9,.9,1,1.2,1.3,1],sh:[-.01,.01,.04],hi:[-.02,.01,.04],gr:.02}));
 SIMS.unshift(Object.assign({},NEUT,{n:"Tanpa Filter",d:"Polos"}));
 let app="digicam";
 const MAXB=90000;
@@ -682,6 +708,32 @@ $("go").onclick=()=>{
 $("menuBtn").onclick=()=>{if(recorder||counting)return;pendingApp=app;
  document.querySelectorAll(".mc").forEach(x=>x.classList.toggle("on",x.dataset.app===app));
  $("sheet").classList.remove("show");$("start").classList.remove("hide")};
+const CATS=[["Semua",null],
+["Digicam",["Tanpa Filter","Digicam Biru","Digicam Biru Soft","Digicam Flash","CCD Y2K","Disposable Kuning","Polaroid"]],
+["Potret",["Bright & Airy","Portrait Hangat","Wedding Soft","Pastel","Pink Dreamy","Fashion Editorial"]],
+["Sinematik",["Teal & Orange","Dark Moody","Matte Black","Cyberpunk","Neon Malam","Forest Moody","Hijau Film","Moody Dingin","Urban Grit"]],
+["Hangat & Warna",["Gold 200","Vintage 70an","Autumn","Sunset Orange","Golden Hour","Retro Merah","Indie Fade","Tropical","Es Biru Segar"]],
+["Hitam Putih",["Acros","Monochrome","Sepia","Acros + Ye","Acros + R","Acros + G","Mono + Ye","Mono + R","Mono + G","Noir Kontras","Street BW","BW Lembut","BW Hangat"]],
+["Klasik",["Provia","Velvia","Astia","Classic Chrome","Classic Neg.","Eterna","Pro Neg. Hi","Pro Neg. Std","Nostalgic Neg.","Reala Ace","Eterna Bleach Bypass"]]];
+let catI=0;
+function buildF(){
+ const b=$("fsb");b.innerHTML="";
+ const t=document.createElement("div");t.className="seg wrap";t.style.marginBottom="10px";
+ CATS.forEach((c,i)=>{const x=document.createElement("button");x.textContent=c[0];x.classList.toggle("on",i===catI);x.onclick=()=>{catI=i;buildF()};t.appendChild(x)});
+ b.appendChild(t);
+ const g=document.createElement("div");g.className="seg wrap";
+ SIMS.forEach((s,i)=>{if(CATS[catI][1]&&!CATS[catI][1].includes(s.n))return;
+  const x=document.createElement("button");x.textContent=s.n;x.classList.toggle("on",i===cur);
+  x.onclick=()=>{pick(i);[...g.children].forEach(y=>y.classList.toggle("on",y===x))};g.appendChild(x)});
+ b.appendChild(g)}
+document.querySelector(".d1").onclick=()=>{if(recorder||counting||app!=="digicam")return;$("sheet").classList.remove("show");buildF();$("fsheet").classList.add("show")};
+$("fClose").onclick=()=>$("fsheet").classList.remove("show");
+let sx=null,sy=0;
+vf.addEventListener("touchstart",e=>{sx=(e.touches.length===1&&!e.target.closest("input,button,.zoom,.ev,.tools"))?e.touches[0].clientX:null;sy=e.touches[0].clientY},{passive:true});
+vf.addEventListener("touchend",e=>{
+ if(sx===null||pd||app!=="digicam"||recorder||counting){sx=null;return}
+ const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;sx=null;
+ if(Math.abs(dx)>70&&Math.abs(dy)<50)pick((cur+(dx<0?1:-1)+SIMS.length)%SIMS.length)});
 click=function(){};beep=function(){};ac=function(){return null};
 pick(1);setRat(0);hudUpd();
 </script>
